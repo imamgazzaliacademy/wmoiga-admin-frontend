@@ -42,15 +42,14 @@ async function handleProxy(
     // });
 
     // Read full body first
-    const data = await response.arrayBuffer();
 
-    const responseHeaders = new Headers(response.headers);
-    responseHeaders.delete("content-encoding");
+    const text = await response.text();
 
-    return new Response(data, {
+    return new Response(text, {
       status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
   } catch (error) {
     console.error("Admin Proxy Error:", error);
