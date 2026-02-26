@@ -42,7 +42,6 @@ export default function Home() {
           <ArrowRight className="w-5 h-5" />
         </button>
       </div>
-
       <p className="mt-8 text-sm font-medium text-gray-400">© {new Date().getFullYear()} WMO Imam Gazzali Academy</p>
       <p className="mt-8 text-[10px] absolute bottom-10 text-center font-medium text-gray-400">Design and Developed by <br /> Ashique Ghazali</p>
     </div>
