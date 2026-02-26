@@ -30,9 +30,7 @@ export default function LoginPage() {
                 body: JSON.stringify({ username, password })
             });
 
-            const data = await response.json();
-            console.log("the response iss==",data);
-            
+            const data = await response.json();            
 
             if (data.success && data.token) {
                 // Store the JWT token

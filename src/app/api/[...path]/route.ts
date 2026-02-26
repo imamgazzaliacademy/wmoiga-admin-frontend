@@ -41,9 +41,7 @@ async function handleProxy(
     //     headers: responseHeaders,
     // });
 
-    // Read full body first
-    console.log("the respooooo==",response.body);
-    
+    // Read full body first    
 
     const text = await response.text();
 
