@@ -1,15 +1,23 @@
 "use client";
 
-import { Bell, User, Menu } from "lucide-react";
+import { Bell, User, Menu, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { IoClose } from "react-icons/io5";
 
 interface HeaderProps {
   onMenuClick: () => void;
-  isOpen:boolean
+  isOpen: boolean
 }
 
-export default function Header({ onMenuClick,isOpen }: HeaderProps) {
+export default function Header({ onMenuClick, isOpen }: HeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    router.push("/login");
+  };
+
   return (
     <header className="h-16 px-6 sticky top-0 z-50 lg:px-8 bg-white border-b border-border flex items-center justify-between shadow-sm">
       <div className="flex items-center gap-3">
@@ -25,7 +33,7 @@ export default function Header({ onMenuClick,isOpen }: HeaderProps) {
           onClick={onMenuClick}
           className="lg:hidden p-2 text-primary hover:bg-secondary transition-all duration-200 rounded-md"
         >
-          {isOpen ? <IoClose size={24} />:<Menu size={24} />}
+          {isOpen ? <IoClose size={24} /> : <Menu size={24} />}
         </button>
 
         {/* Desktop User Profile - Hidden on small screens */}
@@ -47,6 +55,13 @@ export default function Header({ onMenuClick,isOpen }: HeaderProps) {
               <User size={18} />
             </div>
           </div>
+
+          <div className="h-8 w-px bg-gray-200 mx-1"></div>
+
+          <button onClick={handleLogout} className="p-2 flex items-center gap-2 text-red-500 hover:text-red-700 transition-colors relative" title="Logout">
+            <LogOut size={20} />
+            <span className="text-sm font-semibold">Logout</span>
+          </button>
         </div>
       </div>
     </header>

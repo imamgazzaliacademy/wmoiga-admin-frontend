@@ -9,11 +9,13 @@ import {
   GraduationCap,
   FileText,
   Megaphone,
+  CalendarDays,
 } from "lucide-react";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { name: "Admission", icon: FileText, href: "/admission" },
+  { name: "Important Dates", icon: CalendarDays, href: "/important-dates" },
   { name: "Announcement", icon: Megaphone, href: "/announcement" },
   { name: "Students", icon: Users, href: "/students", badge: "Soon" },
   { name: "Alumni", icon: GraduationCap, href: "/alumni", badge: "Soon" },
@@ -40,7 +42,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar Container */}
       <aside
         className={`
-          fixed top-16 lg:static inset-y-0 left-0 z-40 w-72 transform 
+          fixed top-16 h-[90vh] lg:static inset-y-0 left-0 z-40 w-72 transform 
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           transition-transform duration-300 ease-in-out
           lg:pt-6 lg:pl-6 lg:pb-6
@@ -59,10 +61,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={onClose}
                   className={`
                     relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group
-                    ${
-                      isActive
-                        ? "bg-primary text-white shadow-lg shadow-primary/25"
-                        : "text-gray-500 hover:bg-secondary hover:text-primary"
+                    ${isActive
+                      ? "bg-primary text-white shadow-lg shadow-primary/25"
+                      : "text-gray-500 hover:bg-secondary hover:text-primary"
                     }
                   `}
                 >
