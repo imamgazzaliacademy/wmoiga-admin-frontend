@@ -1,49 +1,64 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.BACKEND_API_URL || "http://localhost:5000";
 
-async function handleProxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
-    try {
-        const { path } = await params;
-        const urlPath = path.join('/');
-        const searchParams = request.nextUrl.search;
+async function handleProxy(
+  request: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> },
+) {
+  try {
+    const { path } = await params;
+    const urlPath = path.join("/");
+    const searchParams = request.nextUrl.search;
 
-        // Construct the backend URL directly from the path
-        const backendUrl = `${BACKEND_URL}/${urlPath}${searchParams}`;
+    // Construct the backend URL directly from the path
+    const backendUrl = `${BACKEND_URL}/${urlPath}${searchParams}`;
 
-        // Forward the headers, omitting 'host'
-        const headers = new Headers(request.headers);
-        headers.delete('host');
+    // Forward the headers, omitting 'host'
+    const headers = new Headers(request.headers);
+    headers.delete("host");
 
-        const fetchOptions: RequestInit & { duplex?: 'half' } = {
-            method: request.method,
-            headers,
-        };
+    const fetchOptions: RequestInit & { duplex?: "half" } = {
+      method: request.method,
+      headers,
+    };
 
-        // Forward the stream body directly
-        if (request.method !== 'GET' && request.method !== 'HEAD' && request.body) {
-            fetchOptions.body = request.body;
-            fetchOptions.duplex = 'half';
-        }
-
-        const response = await fetch(backendUrl, fetchOptions);
-
-        // Filter headers to return to the client
-        const responseHeaders = new Headers(response.headers);
-        responseHeaders.delete('content-encoding');
-
-        return new Response(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: responseHeaders,
-        });
-    } catch (error) {
-        console.error('Admin Proxy Error:', error);
-        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
+    // Forward the stream body directly
+    if (request.method !== "GET" && request.method !== "HEAD" && request.body) {
+      fetchOptions.body = request.body;
+      fetchOptions.duplex = "half";
     }
+
+    const response = await fetch(backendUrl, fetchOptions);
+
+    // Filter headers to return to the client
+    // const responseHeaders = new Headers(response.headers);
+    // responseHeaders.delete('content-encoding');
+
+    // return new Response(response.body, {
+    //     status: response.status,
+    //     statusText: response.statusText,
+    //     headers: responseHeaders,
+    // });
+
+    // Read full body first
+    const data = await response.arrayBuffer();
+
+    const responseHeaders = new Headers(response.headers);
+    responseHeaders.delete("content-encoding");
+
+    return new Response(data, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: responseHeaders,
+    });
+  } catch (error) {
+    console.error("Admin Proxy Error:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
 export const GET = handleProxy;
