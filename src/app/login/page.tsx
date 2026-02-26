@@ -31,6 +31,8 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
+            console.log("the response iss==",data);
+            
 
             if (data.success && data.token) {
                 // Store the JWT token
