@@ -32,7 +32,20 @@ async function handleProxy(request: NextRequest, { params }: { params: Promise<{
         const responseHeaders = new Headers(response.headers);
         responseHeaders.delete('content-encoding');
 
-        return new Response(response.body, {
+        // Check if the response is binary/file
+        const contentType = responseHeaders.get("content-type") || "";
+        if (contentType.includes("application/pdf") || contentType.includes("image/")) {
+            // Forward the binary buffer exactly as is
+            const arrayBuffer = await response.arrayBuffer();
+            return new Response(arrayBuffer, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: responseHeaders,
+            });
+        }
+
+        const text = await response.text();
+        return new Response(text, {
             status: response.status,
             statusText: response.statusText,
             headers: responseHeaders,
