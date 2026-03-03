@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Plus, Search, ChevronLeft, ChevronRight, Eye, X, FileText, Calendar, User, Phone, MapPin, Trash2 } from "lucide-react";
+import { Download, Plus, Search, ChevronLeft, ChevronRight, Eye, X, FileText, Calendar, User, Phone, MapPin, Trash2, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
     Table,
@@ -211,6 +211,14 @@ export default function AdmissionPage() {
                                                         <Eye size={16} />
                                                         View
                                                     </button>
+                                                    <Link
+                                                        href={`/admission/${app.id}/edit`}
+                                                        className="flex items-center gap-1 text-sm text-amber-600 hover:text-amber-800 transition-colors"
+                                                        title="Edit Application"
+                                                    >
+                                                        <Pencil size={16} />
+                                                        Edit
+                                                    </Link>
                                                     <button
                                                         onClick={() => downloadApplication(app.register_number, `Application_${app.full_name}-${app.register_number}`)}
                                                         className="flex items-center gap-1 text-sm text-green-600 hover:text-green-800 transition-colors"
