@@ -77,7 +77,7 @@ export default function AdmissionPage() {
         const loadingToast = toast.loading("Generating Hall Ticket...");
         try {
             const SAMPLE_DATA: HallTicketData = {
-                examinationCentre: "WMO Imam Ghazali Academy, Koolivayal",
+                examinationCentre: "WMO Imam Gazzali Academy, Koolivayal",
                 registerNumber: appData.register_number,
                 nameOfCandidate: appData.full_name,
                 dateOfBirth: new Date(appData.date_of_birth).toLocaleDateString(),
