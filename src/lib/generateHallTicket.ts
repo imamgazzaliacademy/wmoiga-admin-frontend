@@ -195,7 +195,7 @@ export function generateHallTicketHTML(data: HallTicketData): string {
       <div class="logo-wrap">
         <img class="logo-circle" src="/fullLogo.png" alt="..." />
       </div>
-      <div class="academy-name">WMO Imam Ghazali Academy</div>
+      <div class="academy-name">WMO IMAM GAZZALI ACADEMY</div>
       <div class="sub-name">Kooliyangal</div>
       <div class="exam-title">Entrance Examination – April 2026</div>
       <span class="exam-title">Hall Ticket</span>
