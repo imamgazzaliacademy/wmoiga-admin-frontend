@@ -128,6 +128,36 @@ export default function AdmissionPage() {
         setDeleteModalAppId(id);
     };
 
+    const exportToExcel = async () => {
+        const loadingToast = toast.loading("Preparing Excel file...");
+        try {
+            const response = await apiClient.get<Blob>('/export_admissions', {
+                responseType: 'blob'
+            });
+
+            // Create blob link to download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `admissions_export.xlsx`);
+
+            // Append to html link element page
+            document.body.appendChild(link);
+
+            // Start download
+            link.click();
+
+            // Clean up and remove the link
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.update(loadingToast, { render: "Export successful!", type: "success", isLoading: false, autoClose: 3000 });
+        } catch (error) {
+            console.error("Failed to export admissions", error);
+            toast.update(loadingToast, { render: "Failed to export data.", type: "error", isLoading: false, autoClose: 3000 });
+        }
+    };
+
     const confirmDeleteApp = async () => {
         if (!deleteModalAppId) return;
         setIsDeleting(true);
@@ -155,13 +185,22 @@ export default function AdmissionPage() {
                     <h1 className="text-2xl font-bold text-foreground">Admission Management</h1>
                     <p className="text-gray-500">Manage student applications and hall tickets.</p>
                 </div>
-                <Link
-                    href="/admission/new"
-                    className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
-                >
-                    <Plus size={18} />
-                    Add Manual Application
-                </Link>
+                <div className="flex gap-2">
+                    <button
+                        onClick={exportToExcel}
+                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
+                    >
+                        <Download size={18} />
+                        Export
+                    </button>
+                    <Link
+                        href="/admission/new"
+                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
+                    >
+                        <Plus size={18} />
+                        Add Manual Application
+                    </Link>
+                </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
