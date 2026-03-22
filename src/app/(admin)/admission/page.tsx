@@ -17,6 +17,7 @@ import { useFetch } from "@/hooks/useFetch";
 import { toast } from "react-toastify";
 import apiClient from "@/services/api";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { downloadHallTicketAsPDF, generateHallTicketHTML, HallTicketData } from "@/lib/generateHallTicket";
 
 interface IApplication {
     id: number;
@@ -71,28 +72,24 @@ export default function AdmissionPage() {
         toast.success("Open Manual Application Form Modal");
     };
 
-    const downloadHallTicket = async (id: string, fileName: string) => {
+
+    const downloadHallTicket = async (appData: IApplication) => {
         const loadingToast = toast.loading("Generating Hall Ticket...");
         try {
-            const response = await apiClient.get<Blob>(`/download_hall_ticket/${id}`, {
-                responseType: 'blob'
-            });
+            const SAMPLE_DATA: HallTicketData = {
+                examinationCentre: "WMO Imam Ghazali Academy, Koolivayal",
+                registerNumber: appData.register_number,
+                nameOfCandidate: appData.full_name,
+                dateOfBirth: new Date(appData.date_of_birth).toLocaleDateString(),
+                fatherName: appData.father_name,
+                motherName: appData.mother_name,
+                photoUrl: appData.photo_url,
+            };
 
-            // Create blob link to download
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `${fileName}.pdf`);
+            const html = generateHallTicketHTML(SAMPLE_DATA);
 
-            // Append to html link element page
-            document.body.appendChild(link);
-
-            // Start download
-            link.click();
-
-            // Clean up and remove the link
-            link.parentNode?.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            // 2. Open print dialog  →  user saves as PDF
+            downloadHallTicketAsPDF(html, SAMPLE_DATA.nameOfCandidate);
 
             toast.update(loadingToast, { render: "Hall Ticket Downloaded!", type: "success", isLoading: false, autoClose: 3000 });
         } catch (error) {
@@ -267,7 +264,7 @@ export default function AdmissionPage() {
                                                         App Form
                                                     </button>
                                                     <button
-                                                        onClick={() => downloadHallTicket(app.id.toString(), `${app.full_name}-HallTicket`)}
+                                                        onClick={() => downloadHallTicket(app)}
                                                         className="flex items-center gap-1 text-sm text-primary hover:text-primary-hover transition-colors"
                                                         title="Download Hall Ticket"
                                                     >
