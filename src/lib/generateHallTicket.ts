@@ -1,13 +1,13 @@
 // lib/generateHallTicket.ts
 
 export interface HallTicketData {
-    examinationCentre: string;
-    registerNumber: string;
-    nameOfCandidate: string;
-    dateOfBirth: string;
-    fatherName: string;
-    motherName: string;
-    photoUrl: string;
+  examinationCentre: string;
+  registerNumber: string;
+  nameOfCandidate: string;
+  dateOfBirth: string;
+  fatherName: string;
+  motherName: string;
+  photoUrl: string;
 }
 
 /**
@@ -15,22 +15,22 @@ export interface HallTicketData {
  * Pass the result straight into downloadHallTicketAsPDF().
  */
 export function generateHallTicketHTML(data: HallTicketData): string {
-    const {
-        examinationCentre,
-        registerNumber,
-        nameOfCandidate,
-        dateOfBirth,
-        fatherName,
-        motherName,
-        photoUrl,
-    } = data;
+  const {
+    examinationCentre,
+    registerNumber,
+    nameOfCandidate,
+    dateOfBirth,
+    fatherName,
+    motherName,
+    photoUrl,
+  } = data;
 
-    const photoContent = photoUrl
-        ? `<img src="${photoUrl}" alt="Candidate Photo"
+  const photoContent = photoUrl
+    ? `<img src="${photoUrl}" alt="Candidate Photo"
             style="width:100%;height:100%;object-fit:cover;border-radius:2px;" />`
-        : `<div class="photo-icon">&#128247;</div><span>Affix Photo</span>`;
+    : `<div class="photo-icon">&#128247;</div><span>Affix Photo</span>`;
 
-    return /* html */ `<!DOCTYPE html>
+  return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -196,7 +196,7 @@ export function generateHallTicketHTML(data: HallTicketData): string {
         <img class="logo-circle" src="/fullLogo.png" alt="..." />
       </div>
       <div class="academy-name">WMO IMAM GAZZALI ACADEMY</div>
-      <div class="sub-name">Kooliyangal</div>
+      <div class="sub-name">Koolivayal</div>
       <div class="exam-title">Entrance Examination – April 2026</div>
       <span class="exam-title">Hall Ticket</span>
     </div>
@@ -284,10 +284,10 @@ export function generateHallTicketHTML(data: HallTicketData): string {
     <!-- SIGNATURES -->
     <div class="signature-section">
       <div class="sig-block">
-        <div class="sig-label">Signature of Candidate</div>
+        
       </div>
       <div class="sig-block">
-        <div class="sig-label">Signature of Admission Coordinator</div>
+        <div class="sig-label">Signature of Candidate</div>
       </div>
     </div>
 
@@ -298,69 +298,69 @@ export function generateHallTicketHTML(data: HallTicketData): string {
 
 
 export async function downloadHallTicketAsPDF(
-    htmlString: string,
-    candidateName: string
+  htmlString: string,
+  candidateName: string
 ): Promise<void> {
-    const safeName = candidateName
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-    const fileName = `${safeName}-hallticket.pdf`;
+  const safeName = candidateName
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+  const fileName = `${safeName}-hallticket.pdf`;
 
-    // ── 1. Dynamically import libraries (client-only, no SSR bundle) ──────────
-    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import("jspdf"),
-        import("html2canvas"),
-    ]);
+  // ── 1. Dynamically import libraries (client-only, no SSR bundle) ──────────
+  const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+    import("jspdf"),
+    import("html2canvas"),
+  ]);
 
-    // ── 2. Create a fully isolated iframe ─────────────────────────────────────
-    // "sandbox" with allow-same-origin lets us read the contentDocument but
-    // completely blocks the host page's stylesheets from leaking in.
-    const iframe = document.createElement("iframe");
-    iframe.setAttribute("sandbox", "allow-same-origin");
-    iframe.style.cssText =
-        "position:fixed;top:-9999px;left:-9999px;width:794px;height:1123px;" +
-        "border:none;visibility:hidden;";
-    document.body.appendChild(iframe);
+  // ── 2. Create a fully isolated iframe ─────────────────────────────────────
+  // "sandbox" with allow-same-origin lets us read the contentDocument but
+  // completely blocks the host page's stylesheets from leaking in.
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("sandbox", "allow-same-origin");
+  iframe.style.cssText =
+    "position:fixed;top:-9999px;left:-9999px;width:794px;height:1123px;" +
+    "border:none;visibility:hidden;";
+  document.body.appendChild(iframe);
 
-    await new Promise<void>((resolve) => {
-        iframe.onload = () => resolve();
-        // Write the self-contained HTML (all styles are inline in the template)
-        const doc = iframe.contentDocument!;
-        doc.open();
-        doc.write(htmlString);
-        doc.close();
-        // If onload already fired (some browsers), resolve immediately
-        if (iframe.contentDocument?.readyState === "complete") resolve();
+  await new Promise<void>((resolve) => {
+    iframe.onload = () => resolve();
+    // Write the self-contained HTML (all styles are inline in the template)
+    const doc = iframe.contentDocument!;
+    doc.open();
+    doc.write(htmlString);
+    doc.close();
+    // If onload already fired (some browsers), resolve immediately
+    if (iframe.contentDocument?.readyState === "complete") resolve();
+  });
+
+  // Give fonts / images a moment to paint
+  await new Promise((r) => setTimeout(r, 300));
+
+  const iframeDoc = iframe.contentDocument!;
+  const target = iframeDoc.querySelector<HTMLElement>(".page") ?? iframeDoc.body;
+
+  try {
+    // ── 3. Render to canvas inside the isolated iframe ─────────────────────
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+      // windowWidth / windowHeight scoped to the iframe — no host styles
+      windowWidth: 794,
+      windowHeight: 1123,
     });
 
-    // Give fonts / images a moment to paint
-    await new Promise((r) => setTimeout(r, 300));
-
-    const iframeDoc = iframe.contentDocument!;
-    const target = iframeDoc.querySelector<HTMLElement>(".page") ?? iframeDoc.body;
-
-    try {
-        // ── 3. Render to canvas inside the isolated iframe ─────────────────────
-        const canvas = await html2canvas(target, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: "#ffffff",
-            // windowWidth / windowHeight scoped to the iframe — no host styles
-            windowWidth: 794,
-            windowHeight: 1123,
-        });
-
-        // ── 4. Build the PDF ────────────────────────────────────────────────────
-        const imgData = canvas.toDataURL("image/jpeg", 0.98);
-        const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-        const pdfW = pdf.internal.pageSize.getWidth();
-        const pdfH = pdf.internal.pageSize.getHeight();
-        pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
-        pdf.save(fileName);
-    } finally {
-        document.body.removeChild(iframe);
-    }
+    // ── 4. Build the PDF ────────────────────────────────────────────────────
+    const imgData = canvas.toDataURL("image/jpeg", 0.98);
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const pdfH = pdf.internal.pageSize.getHeight();
+    pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+    pdf.save(fileName);
+  } finally {
+    document.body.removeChild(iframe);
+  }
 }
