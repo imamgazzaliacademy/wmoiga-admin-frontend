@@ -68,18 +68,18 @@ export function generateHallTicketHTML(data: HallTicketData): string {
       align-items: center; justify-content: center;
     }
     .academy-name {
-      font-size: 17px; font-weight: bold;
+      font-size: 24px; font-weight: bold;
       color: #1a1a2e; letter-spacing: 0.5px; margin-top: 2px;
     }
-    .sub-name { font-size: 11px; color: #3a3a3a; margin-top: 1px; }
+    .sub-name { font-size: 18px; color: #3a3a3a; margin-top: 1px; }
     .exam-title {
-      font-size: 13px; font-weight: bold; margin-top: 4px;
+      font-size: 18px; font-weight: bold; margin-top: 4px;
       color: #1a1a2e; text-transform: uppercase; letter-spacing: 1px;
     }
     .ticket-label {
       display: inline-block; margin-top: 5px;
       background: #1a1a2e; color: #fff;
-      font-size: 11px; font-weight: bold;
+      font-size: 16px; font-weight: bold;
       padding: 2px 18px; letter-spacing: 1.5px; border-radius: 2px;
     }
 
@@ -94,7 +94,7 @@ export function generateHallTicketHTML(data: HallTicketData): string {
     .candidate-details { flex: 1; }
     .detail-row {
       display: flex; align-items: flex-start;
-      margin-bottom: 7px; font-size: 11.5px;
+      margin-bottom: 7px; font-size: 16px;
     }
     .detail-label {
       min-width: 130px; font-weight: bold;
@@ -119,16 +119,16 @@ export function generateHallTicketHTML(data: HallTicketData): string {
     /* ── EXAM TABLE ── */
     .exam-section { margin-bottom: 10px; }
     .section-title {
-      font-size: 11px; font-weight: bold;
+      font-size: 16px; font-weight: bold;
       color: #1a1a2e; margin-bottom: 5px;
       border-left: 3px solid #1a1a2e;
       padding-left: 6px; line-height: 1.4;
     }
-    .exam-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .exam-table { width: 100%; border-collapse: collapse; font-size: 16px; }
     .exam-table th {
       background: #1a1a2e; color: #fff;
       padding: 5px 8px; text-align: left;
-      font-weight: bold; font-size: 10.5px; letter-spacing: 0.3px;
+      font-weight: bold; font-size: 14px; letter-spacing: 0.3px;
     }
     .exam-table td {
       border: 1px solid #aaa; padding: 7px 8px; vertical-align: middle;
@@ -146,7 +146,7 @@ export function generateHallTicketHTML(data: HallTicketData): string {
       border-top: 1.5px solid #1a1a2e;
       margin-bottom: 4px; margin-top: 28px;
     }
-    .sig-label { font-size: 10.5px; font-weight: bold; color: #1a1a2e; }
+    .sig-label { font-size: 16px; font-weight: bold; color: #1a1a2e; }
 
     /* ── INSTRUCTIONS ── */
     .instructions-section {
@@ -154,7 +154,7 @@ export function generateHallTicketHTML(data: HallTicketData): string {
       padding: 8px 12px; background: #faf8f4;
     }
     .instructions-title {
-      font-size: 12px; font-weight: bold;
+      font-size: 20px; font-weight: bold;
       text-transform: uppercase; letter-spacing: 1px;
       color: #1a1a2e; margin-bottom: 6px;
       border-bottom: 1px solid #ccc; 
@@ -162,18 +162,18 @@ export function generateHallTicketHTML(data: HallTicketData): string {
     }
     .instructions-list { list-style: none; padding: 0; }
     .instructions-list li {
-      font-size: 10px; color: #333;
+      font-size: 14px; color: #333;
       line-height: 1.55; padding-left: 14px;
       position: relative; margin-bottom: 2px;
     }
     .instructions-list li::before {
       content: "•"; position: absolute; left: 3px;
-      color: #1a1a2e; font-size: 11px;
+      color: #1a1a2e; font-size: 16px;
     }
 
     /* ── FOOTER ── */
     .footer-note {
-      text-align: center; font-size: 9px;
+      text-align: center; font-size: 14px;
       color: #888; margin-top: 8px; font-style: italic;
     }
 
@@ -252,12 +252,12 @@ export function generateHallTicketHTML(data: HallTicketData): string {
         </thead>
         <tbody>
           <tr>
-            <td>12/04/2026<br /><span style="font-size:10px;color:#555;">10:00 AM</span></td>
+            <td>15/04/2026<br /><span style="font-size:10px;color:#555;">10:00 AM</span></td>
             <td>Entrance Examination</td>
             <td class="sig-cell"></td>
           </tr>
           <tr>
-            <td>15/04/2026<br /><span style="font-size:10px;color:#555;">10:00 AM</span></td>
+            <td>19/04/2026<br /><span style="font-size:10px;color:#555;">10:00 AM</span></td>
             <td>Interview</td>
             <td class="sig-cell"></td>
           </tr>

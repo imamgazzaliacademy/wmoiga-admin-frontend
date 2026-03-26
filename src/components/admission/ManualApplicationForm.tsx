@@ -1013,7 +1013,7 @@ const ManualApplicationForm = () => {
                 {/* School TC */}
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-(--accent-gold) transition-colors">
                   <label className="block text-sm font-semibold text-(--primary-color) mb-3">
-                    School Transfer Certificate (if available)
+                    {"Birth Certificate"}
                   </label>
                   <div className="flex items-center gap-4">
                     <label className="cursor-pointer px-6 py-3 bg-(--primary-color) text-white rounded-[5px] font-semibold hover:bg-(--primary-color)/90 transition-all">
@@ -1045,12 +1045,12 @@ const ManualApplicationForm = () => {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Upload TC from previous school if available
+                    Upload Birth Certificate
                   </p>
                 </div>
 
                 {/* Madrasa Certificate */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-(--accent-gold) transition-colors">
+                {/* <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-(--accent-gold) transition-colors">
                   <label className="block text-sm font-semibold text-(--primary-color) mb-3">
                     Madrasa 5th Certificate (if applicable)
                   </label>
@@ -1086,7 +1086,7 @@ const ManualApplicationForm = () => {
                   <p className="text-xs text-gray-500 mt-2">
                     Upload certificate if you have completed Madrasa 5th
                   </p>
-                </div>
+                </div> */}
 
                 {/* Important Notice */}
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
