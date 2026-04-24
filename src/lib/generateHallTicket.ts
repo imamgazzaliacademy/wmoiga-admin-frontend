@@ -281,25 +281,26 @@ export function generateHallTicketHTML(data: HallTicketData): string {
       </ul>
     </div>
 
-    <!-- SIGNATURES -->
-    <div class="signature-section">
-      <div class="sig-block">
-        div class="sig-label">Signature of Principal</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-label">Signature of Candidate</div>
-      </div>
-    </div>
+<div class="signature-section">
+  <div class="sig-block">
+    <div class="sig-line"></div>
+    <div class="sig-label">Signature of Principal</div>
+  </div>
+
+  <div class="sig-block">
+    <div class="sig-line"></div>
+    <div class="sig-label">Signature of Candidate</div>
+  </div>
+</div>
 
   </div>
 </body>
 </html>`;
 }
 
-
 export async function downloadHallTicketAsPDF(
   htmlString: string,
-  candidateName: string
+  candidateName: string,
 ): Promise<void> {
   const safeName = candidateName
     .trim()
@@ -339,7 +340,8 @@ export async function downloadHallTicketAsPDF(
   await new Promise((r) => setTimeout(r, 300));
 
   const iframeDoc = iframe.contentDocument!;
-  const target = iframeDoc.querySelector<HTMLElement>(".page") ?? iframeDoc.body;
+  const target =
+    iframeDoc.querySelector<HTMLElement>(".page") ?? iframeDoc.body;
 
   try {
     // ── 3. Render to canvas inside the isolated iframe ─────────────────────
@@ -355,7 +357,11 @@ export async function downloadHallTicketAsPDF(
 
     // ── 4. Build the PDF ────────────────────────────────────────────────────
     const imgData = canvas.toDataURL("image/jpeg", 0.98);
-    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pdf = new jsPDF({
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait",
+    });
     const pdfW = pdf.internal.pageSize.getWidth();
     const pdfH = pdf.internal.pageSize.getHeight();
     pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
