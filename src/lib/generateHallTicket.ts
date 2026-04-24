@@ -252,12 +252,12 @@ export function generateHallTicketHTML(data: HallTicketData): string {
         </thead>
         <tbody>
           <tr>
-            <td>15/04/2026<br /><span style="font-size:10px;color:#555;">10:00 AM</span></td>
+            <td>26/04/2026<br /><span style="font-size:10px;color:#555;">09:30 AM</span></td>
             <td>Entrance Examination</td>
             <td class="sig-cell"></td>
           </tr>
           <tr>
-            <td>19/04/2026<br /><span style="font-size:10px;color:#555;">10:00 AM</span></td>
+            <td>02/05/2026<br /><span style="font-size:10px;color:#555;">09:30 AM</span></td>
             <td>Interview</td>
             <td class="sig-cell"></td>
           </tr>
@@ -284,7 +284,7 @@ export function generateHallTicketHTML(data: HallTicketData): string {
     <!-- SIGNATURES -->
     <div class="signature-section">
       <div class="sig-block">
-        
+        div class="sig-label">Signature of Principal</div>
       </div>
       <div class="sig-block">
         <div class="sig-label">Signature of Candidate</div>
