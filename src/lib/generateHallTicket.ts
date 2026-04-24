@@ -283,12 +283,10 @@ export function generateHallTicketHTML(data: HallTicketData): string {
 
 <div class="signature-section">
   <div class="sig-block">
-    <div class="sig-line"></div>
     <div class="sig-label">Signature of Principal</div>
   </div>
 
   <div class="sig-block">
-    <div class="sig-line"></div>
     <div class="sig-label">Signature of Candidate</div>
   </div>
 </div>
