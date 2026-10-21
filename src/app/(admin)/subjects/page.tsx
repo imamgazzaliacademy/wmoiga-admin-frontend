@@ -249,7 +249,7 @@ export default function SubjectsPage() {
       {/* Subjects Data Table */}
       <Card className="bg-white border border-neutral-200 shadow-none overflow-hidden">
         <CardContent className="p-0">
-          <Table>
+          <Table className="min-w-[650px] whitespace-nowrap">
             <TableHeader className="bg-neutral-50 border-b border-neutral-200">
               <TableRow>
                 <TableHead className="w-12">#</TableHead>
@@ -351,12 +351,12 @@ export default function SubjectsPage() {
 
           {/* Pagination */}
           {metadata && metadata.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 bg-neutral-50/50 text-xs text-neutral-600">
-              <div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-neutral-200 bg-neutral-50/50 text-xs text-neutral-600">
+              <div className="text-center sm:text-left">
                 Showing page <span className="font-semibold text-neutral-900">{metadata.currentPage || metadata.page}</span> of{" "}
                 <span className="font-semibold text-neutral-900">{metadata.totalPages}</span> ({metadata.totalItems || metadata.total} total subjects)
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage(page - 1)}
@@ -380,9 +380,9 @@ export default function SubjectsPage() {
 
       {/* Delete Confirmation Modal */}
       {deletingSubject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-xl p-5 shadow-2xl border border-neutral-200 space-y-3">
-            <h3 className="text-base font-bold text-neutral-900">Confirm Subject Deletion</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white rounded-xl p-4 sm:p-5 shadow-2xl border border-neutral-200 space-y-3 animate-in fade-in zoom-in-95">
+            <h3 className="text-sm sm:text-base font-bold text-neutral-900">Confirm Subject Deletion</h3>
             <p className="text-xs text-neutral-600 leading-relaxed">
               Are you sure you want to permanently delete subject{" "}
               <span className="font-bold text-neutral-900">"{deletingSubject.name}"</span>?
@@ -390,7 +390,7 @@ export default function SubjectsPage() {
             <p className="text-[11px] text-neutral-500">
               Note: If this subject is referenced in any examination configurations or marks, deletion will be safely rejected to preserve academic integrity. You can mark it as Inactive instead.
             </p>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
               <button
                 onClick={() => setDeletingSubject(null)}
                 disabled={isDeleting}

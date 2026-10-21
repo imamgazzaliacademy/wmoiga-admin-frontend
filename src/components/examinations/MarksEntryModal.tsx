@@ -157,7 +157,10 @@ export default function MarksEntryModal({
     try {
       const res = await apiClient.post(
         `/examinations/${examinationId}/marks/${selectedStudentId}`,
-        { marks: marksPayload }
+        {
+          class_name: selectedClass,
+          marks: marksPayload,
+        }
       );
 
       toast.success("Marks saved and results recalculated successfully");
@@ -203,41 +206,41 @@ export default function MarksEntryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-5xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-5xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-neutral-200 overflow-hidden my-auto flex flex-col animate-in fade-in zoom-in-95">
         {/* Header - Standard Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
           <div className="flex items-center gap-2.5">
-            <Award size={18} className="text-neutral-300" />
+            <Award size={18} className="text-neutral-300 shrink-0" />
             <div>
-              <h2 className="text-base font-bold">Marks Entry & Evaluation Workflow</h2>
-              <p className="text-xs text-neutral-400">
+              <h2 className="text-sm sm:text-base font-bold">Marks Entry & Evaluation Workflow</h2>
+              <p className="text-[11px] sm:text-xs text-neutral-400">
                 Examination: <span className="text-white font-semibold">{examinationName}</span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Step 1 & 2: Class Selection */}
-        <div className="px-6 py-3 bg-neutral-50 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+        <div className="shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 bg-neutral-50 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 sm:pb-0">
+            <span className="text-[11px] font-bold text-neutral-700 uppercase tracking-wider shrink-0">
               Select Class:
             </span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex overflow-x-auto gap-1 scrollbar-thin">
               {SUPPORTED_CLASSES.map((cls) => {
                 const isSelected = selectedClass === cls.value;
                 return (
                   <button
                     key={cls.value}
                     onClick={() => setSelectedClass(cls.value)}
-                    className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap transition-all ${
                       isSelected
                         ? "bg-neutral-900 text-white"
                         : "bg-white text-neutral-700 hover:bg-neutral-200 border border-neutral-200"
@@ -253,21 +256,21 @@ export default function MarksEntryModal({
           <button
             onClick={loadClassData}
             title="Refresh Class Data"
-            className="p-1 text-neutral-500 hover:text-neutral-900 border border-neutral-300 rounded hover:bg-neutral-100"
+            className="p-1.5 text-neutral-500 hover:text-neutral-900 border border-neutral-300 rounded hover:bg-neutral-100 shrink-0"
           >
             <RefreshCw size={14} />
           </button>
         </div>
 
         {/* Workflow Body: Two Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[460px] max-h-[65vh] overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 overflow-y-auto lg:overflow-hidden">
           {/* Left Column: Student List for Selected Class */}
-          <div className="lg:col-span-4 border-r border-neutral-200 p-4 flex flex-col gap-3 bg-neutral-50/50">
+          <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-neutral-200 p-3 sm:p-4 flex flex-col gap-2.5 bg-neutral-50/50 max-h-56 lg:max-h-none overflow-hidden shrink-0">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-800">
                 Students ({filteredStudents.length})
               </span>
-              <span className="text-[11px] text-neutral-500">Class {selectedClass}</span>
+              <span className="text-[11px] text-neutral-500 font-medium">Class {selectedClass}</span>
             </div>
 
             {/* Search */}
@@ -405,8 +408,8 @@ export default function MarksEntryModal({
                 </div>
 
                 {/* Marks Entry Table */}
-                <div className="border border-neutral-200 rounded-lg overflow-hidden">
-                  <table className="w-full text-left text-xs">
+                <div className="border border-neutral-200 rounded-lg overflow-x-auto scrollbar-thin">
+                  <table className="w-full min-w-[520px] text-left text-xs whitespace-nowrap">
                     <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold">
                       <tr>
                         <th className="p-2.5">Subject</th>
@@ -493,11 +496,11 @@ export default function MarksEntryModal({
 
             {/* Bottom Controls */}
             {selectedStudent && subjects.length > 0 && (
-              <div className="flex items-center justify-between pt-4 border-t border-neutral-200 mt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-4 border-t border-neutral-200 mt-4">
                 <button
                   type="button"
                   onClick={handleSelectNextStudent}
-                  className="px-3 py-1.5 text-xs font-medium text-neutral-700 border border-neutral-300 rounded-md hover:bg-neutral-100 flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2 text-xs font-medium text-neutral-700 border border-neutral-300 rounded-md hover:bg-neutral-100 flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <span>Next Student</span>
                   <ArrowRight size={13} />
@@ -507,7 +510,7 @@ export default function MarksEntryModal({
                   type="button"
                   onClick={handleSaveMarks}
                   disabled={saving}
-                  className="px-5 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 sm:px-5 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {saving ? (
                     <>

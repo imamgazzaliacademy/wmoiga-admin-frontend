@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
 
         // Verify token with backend
-        fetch('/api/atc/verify_token', {
+        fetch('/api/verify_token', {
             headers: { Authorization: `Bearer ${token}` },
         })
             .then((res) => {
@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} isOpen={sidebarOpen} />
             <div className="flex h-[calc(100vh-64px)] overflow-hidden">
                 <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 lg:p-6 pb-24 min-w-0">
                     <div className="lg:max-w-400 w-full mx-auto">
                         {children}
                     </div>

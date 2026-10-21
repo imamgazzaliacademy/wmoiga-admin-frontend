@@ -143,38 +143,38 @@ export default function ClassMarkListModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-6xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-6xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95">
         {/* Header - Standard Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
-          <div>
-            <h2 className="text-base font-bold">Class Mark List & Academic Tabulation</h2>
-            <p className="text-xs text-neutral-400">
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
+          <div className="min-w-0 pr-2">
+            <h2 className="text-sm sm:text-base font-bold truncate">Class Mark List & Academic Tabulation</h2>
+            <p className="text-[11px] sm:text-xs text-neutral-400 truncate">
               Examination: <span className="text-white font-semibold">{examinationName}</span> • Scoped to selected class
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="shrink-0 p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Class Selection & Action Bar */}
-        <div className="px-6 py-3 bg-neutral-50/50 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Select Class:
+        <div className="shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 bg-neutral-50/50 border-b border-neutral-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-thin">
+            <span className="shrink-0 text-xs font-bold text-neutral-700 uppercase tracking-wider">
+              Class:
             </span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               {SUPPORTED_CLASSES.map((cls) => {
                 const isSelected = selectedClass === cls.value;
                 return (
                   <button
                     key={cls.value}
                     onClick={() => setSelectedClass(cls.value)}
-                    className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                    className={`px-2.5 sm:px-3 py-1 rounded text-xs font-semibold whitespace-nowrap transition-all ${
                       isSelected
                         ? "bg-neutral-900 text-white"
                         : "bg-white text-neutral-700 hover:bg-neutral-200 border border-neutral-200"
@@ -187,11 +187,11 @@ export default function ClassMarkListModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleExportExcel}
               disabled={exportingExcel || loading}
-              className="px-3 py-1.5 text-xs font-medium text-neutral-800 bg-white border border-neutral-300 rounded hover:bg-neutral-100 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              className="flex-1 sm:flex-initial px-3 py-1.5 text-xs font-medium text-neutral-800 bg-white border border-neutral-300 rounded hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <FileSpreadsheet size={14} />
               <span>Export Excel</span>
@@ -200,7 +200,7 @@ export default function ClassMarkListModal({
             <button
               onClick={handleExportPdf}
               disabled={exportingPdf || loading}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              className="flex-1 sm:flex-initial px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Printer size={14} />
               <span>Export PDF</span>
@@ -209,8 +209,8 @@ export default function ClassMarkListModal({
         </div>
 
         {/* Search bar */}
-        <div className="p-4 bg-white border-b border-neutral-200 flex items-center justify-between gap-3 text-xs">
-          <div className="relative w-full max-w-sm">
+        <div className="shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 text-xs">
+          <div className="relative w-full sm:max-w-sm">
             <Search size={14} className="absolute left-3 top-2.5 text-neutral-400" />
             <input
               type="text"
@@ -221,13 +221,13 @@ export default function ClassMarkListModal({
             />
           </div>
 
-          <span className="text-neutral-500">
+          <span className="text-neutral-500 text-[11px] sm:text-xs">
             Enrolled Students in Class {selectedClass}: <span className="font-bold text-neutral-900">{filteredStudents.length}</span>
           </span>
         </div>
 
         {/* Table Content */}
-        <div className="p-4 max-h-[55vh] overflow-auto">
+        <div className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0">
           {loading ? (
             <div className="py-16 text-center text-xs text-neutral-500">
               <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -247,9 +247,9 @@ export default function ClassMarkListModal({
               No students found for Class {selectedClass}.
             </div>
           ) : (
-            <div className="border border-neutral-200 rounded-lg overflow-x-auto">
-              <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold">
+            <div className="border border-neutral-200 rounded-lg overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs whitespace-nowrap min-w-[700px]">
+                <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold sticky top-0 z-10">
                   <tr>
                     <th className="p-3 w-10">Sl</th>
                     <th className="p-3">Admission No</th>
@@ -361,10 +361,10 @@ export default function ClassMarkListModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex justify-end">
+        <div className="shrink-0 px-4 sm:px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
           >
             Close
           </button>

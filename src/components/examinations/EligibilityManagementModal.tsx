@@ -120,34 +120,34 @@ export default function EligibilityManagementModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-4xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-neutral-200 overflow-hidden my-auto flex flex-col animate-in fade-in zoom-in-95">
         {/* Header - Standard Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
           <div>
-            <h2 className="text-base font-bold">Examination Eligibility & Fee Clearance</h2>
-            <p className="text-xs text-neutral-400">
+            <h2 className="text-sm sm:text-base font-bold">Examination Eligibility & Fee Clearance</h2>
+            <p className="text-[11px] sm:text-xs text-neutral-400">
               Examination: <span className="text-white font-semibold">{examinationName}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Class Selection Tabs */}
-        <div className="px-6 py-3 bg-neutral-50/50 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Filter Class:
+        <div className="shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 bg-neutral-50/50 border-b border-neutral-200 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1 sm:pb-0">
+            <span className="text-[11px] font-bold text-neutral-700 uppercase tracking-wider shrink-0">
+              Class:
             </span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex overflow-x-auto gap-1 scrollbar-thin">
               <button
                 onClick={() => setSelectedClass("all")}
-                className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                className={`px-3 py-1 rounded text-xs font-semibold whitespace-nowrap transition-all ${
                   selectedClass === "all"
                     ? "bg-neutral-900 text-white"
                     : "bg-white text-neutral-700 hover:bg-neutral-200 border border-neutral-200"
@@ -161,7 +161,7 @@ export default function EligibilityManagementModal({
                   <button
                     key={cls.value}
                     onClick={() => setSelectedClass(cls.value)}
-                    className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-semibold whitespace-nowrap transition-all ${
                       isSelected
                         ? "bg-neutral-900 text-white"
                         : "bg-white text-neutral-700 hover:bg-neutral-200 border border-neutral-200"
@@ -177,7 +177,7 @@ export default function EligibilityManagementModal({
           <button
             onClick={handleSyncStudents}
             disabled={syncing}
-            className="px-3 py-1 text-xs font-medium text-neutral-800 bg-white border border-neutral-300 rounded hover:bg-neutral-100 transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 text-xs font-medium text-neutral-800 bg-white border border-neutral-300 rounded hover:bg-neutral-100 transition-colors flex items-center gap-1.5 shrink-0"
           >
             <RefreshCw size={12} className={syncing ? "animate-spin" : ""} />
             <span>Sync Active Students</span>
@@ -185,8 +185,8 @@ export default function EligibilityManagementModal({
         </div>
 
         {/* Filter and Bulk Actions Bar */}
-        <div className="p-4 bg-white border-b border-neutral-200 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+        <div className="shrink-0 p-3 sm:p-4 bg-white border-b border-neutral-200 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs">
             <div className="sm:col-span-2 relative">
               <Search size={14} className="absolute left-3 top-2.5 text-neutral-400" />
               <input
@@ -231,32 +231,32 @@ export default function EligibilityManagementModal({
               Showing <span className="font-bold text-neutral-900">{eligibilities.length}</span> students
             </span>
 
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-neutral-600">Quick Bulk:</span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-semibold text-neutral-600 hidden sm:inline">Quick Bulk:</span>
               <button
                 onClick={() => handleBulkApprove("all_nodues")}
-                className="px-2.5 py-1 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-300 font-medium transition-colors"
+                className="px-2.5 py-1 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-300 font-medium transition-colors text-xs"
               >
                 Approve All No-Dues
               </button>
               <button
                 onClick={() => handleBulkApprove("all_fees")}
-                className="px-2.5 py-1 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-300 font-medium transition-colors"
+                className="px-2.5 py-1 rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-300 font-medium transition-colors text-xs"
               >
-                Mark All Fees Paid
+                Mark Fees Paid
               </button>
               <button
                 onClick={() => handleBulkApprove("all_both")}
-                className="px-2.5 py-1 rounded bg-neutral-900 hover:bg-black text-white font-medium transition-colors"
+                className="px-2.5 py-1 rounded bg-neutral-900 hover:bg-black text-white font-medium transition-colors text-xs"
               >
-                Approve Both (Eligible)
+                Approve Both
               </button>
             </div>
           </div>
         </div>
 
         {/* Table Content */}
-        <div className="p-4 max-h-[50vh] overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-4 overflow-y-auto">
           {loading ? (
             <div className="py-16 text-center text-xs text-neutral-500">
               <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -271,8 +271,8 @@ export default function EligibilityManagementModal({
               </p>
             </div>
           ) : (
-            <div className="border border-neutral-200 rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
+            <div className="border border-neutral-200 rounded-lg overflow-x-auto scrollbar-thin">
+              <table className="w-full min-w-[680px] text-left text-xs whitespace-nowrap">
                 <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold">
                   <tr>
                     <th className="p-3">Admission No</th>
@@ -368,10 +368,10 @@ export default function EligibilityManagementModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex justify-end">
+        <div className="shrink-0 px-4 sm:px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
+            className="px-4 py-1.5 text-xs font-semibold text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-100 transition-colors"
           >
             Close
           </button>

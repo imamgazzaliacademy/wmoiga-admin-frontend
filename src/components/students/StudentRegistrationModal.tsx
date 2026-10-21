@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { X, Upload, User, Calendar, BookOpen, MapPin, Phone, Mail, CheckCircle2 } from "lucide-react";
 import apiClient from "@/services/api";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { adminApi } from "@/store/api/adminApi";
 
 interface Props {
   isOpen: boolean;
@@ -23,6 +25,7 @@ export const SUPPORTED_CLASSES = [
 ];
 
 export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }: Props) {
+  const dispatch = useDispatch();
   const currentYear = new Date().getFullYear();
   const [admissionYear, setAdmissionYear] = useState<number>(currentYear);
   const [previewNumber, setPreviewNumber] = useState<string>("");
@@ -125,6 +128,8 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      dispatch(adminApi.util.invalidateTags([{ type: 'Students', id: 'LIST' }]));
+
       toast.success(
         `Student registered! Assigned Admission Number: ${res.data?.data?.admission_number}`
       );
@@ -142,26 +147,27 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95">
         {/* Header - Clean Black and White */}
-        <div className="bg-neutral-900 text-white px-6 py-4 flex items-center justify-between border-b border-neutral-800">
-          <div>
-            <h2 className="text-base font-bold tracking-tight">Register New Student</h2>
-            <p className="text-xs text-neutral-400">
+        <div className="shrink-0 bg-neutral-900 text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-neutral-800">
+          <div className="min-w-0 pr-2">
+            <h2 className="text-sm sm:text-base font-bold tracking-tight truncate">Register New Student</h2>
+            <p className="text-[11px] sm:text-xs text-neutral-400 truncate">
               Admission number will be safely allocated via database sequence.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="shrink-0 p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 flex-1">
           {/* Section 1: Admission Year & Generated Sequence Preview */}
           <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
@@ -174,9 +180,9 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
                   onChange={(e) => setAdmissionYear(Number(e.target.value))}
                   className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium text-neutral-900"
                 >
-                  {[2022, 2023, 2024, 2025, 2026, 2027, 2028].map((yr) => (
+                  {[2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026].map((yr) => (
                     <option key={yr} value={yr}>
-                      Academic Year {yr}
+                      Academic Year {yr}/{String(yr + 1).slice(-2)}
                     </option>
                   ))}
                 </select>
@@ -376,26 +382,27 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
               </div>
             </div>
           </div>
+          </div>
 
           {/* Action Buttons - Clean Solid Black and White */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-200">
+          <div className="shrink-0 flex items-center justify-end gap-2 sm:gap-3 p-3 sm:px-6 bg-neutral-50 border-t border-neutral-200">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2 px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors disabled:opacity-50"
             >
               {submitting ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Saving Student...</span>
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>

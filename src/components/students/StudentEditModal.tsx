@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { X, Upload, User, Calendar, BookOpen, MapPin, Phone, Mail, CheckCircle2 } from "lucide-react";
 import apiClient from "@/services/api";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { adminApi } from "@/store/api/adminApi";
 import { SUPPORTED_CLASSES } from "./StudentRegistrationModal";
 
 interface Props {
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export default function StudentEditModal({ isOpen, student, onClose, onSuccess }: Props) {
+  const dispatch = useDispatch();
   const [submitting, setSubmitting] = useState(false);
 
   // Form Fields
@@ -95,6 +98,8 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      dispatch(adminApi.util.invalidateTags([{ type: 'Students', id: 'LIST' }]));
+
       toast.update(loadingToast, {
         render: res.data?.message || "Student details updated successfully",
         type: "success",
@@ -121,26 +126,27 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
   if (!isOpen || !student) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header - Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
-          <div>
-            <h2 className="text-base font-bold">Edit Student Details</h2>
-            <p className="text-xs text-neutral-400">
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
+          <div className="min-w-0 pr-2">
+            <h2 className="text-sm sm:text-base font-bold truncate">Edit Student Details</h2>
+            <p className="text-[11px] sm:text-xs text-neutral-400 truncate">
               Admission Number: <span className="text-white font-mono font-bold bg-neutral-800 px-1.5 py-0.5 rounded">{student.admission_number}</span> (Immutable)
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="shrink-0 p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+          <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Read-only Admission ID & Status */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-neutral-50 border border-neutral-200">
             <div>
@@ -230,9 +236,9 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
                   onChange={(e) => setAdmissionYear(Number(e.target.value))}
                   className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
                 >
-                  {[2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028].map((yr) => (
+                  {[2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026].map((yr) => (
                     <option key={yr} value={yr}>
-                      Batch {yr}
+                      Batch {yr}/{String(yr + 1).slice(-2)}
                     </option>
                   ))}
                 </select>
@@ -312,20 +318,22 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
             </div>
           </div>
 
+          </div>
+
           {/* Footer buttons - Solid Black and White */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-200">
+          <div className="shrink-0 flex items-center justify-end gap-2 sm:gap-3 p-3 sm:px-6 bg-neutral-50 border-t border-neutral-200">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-4 sm:px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {submitting ? (
                 <>

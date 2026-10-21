@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: '/api/atc',
+    baseUrl: '/api',
     prepareHeaders: (headers) => {
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('adminToken');
@@ -32,8 +32,23 @@ const baseQueryWithAuthHandling = async (args: any, api: any, extraOptions: any)
 export const adminApi = createApi({
     reducerPath: 'adminApi',
     baseQuery: baseQueryWithAuthHandling,
-    tagTypes: ['Students', 'Examinations', 'Subjects', 'Eligibilities', 'Marks'],
+    tagTypes: ['Students', 'Examinations', 'Subjects', 'Eligibilities', 'Marks', 'Dashboard'],
     endpoints: (builder) => ({
+        // Dashboard Stats
+        getDashboardStats: builder.query<{
+            totalStudents: number;
+            totalAlumni: number;
+            totalApplications: number;
+            totalAnnouncements: number;
+            recentApplications: any[];
+        }, void>({
+            query: () => '/get_dashboard_stats',
+            transformResponse: (response: any) => response?.data,
+            providesTags: [
+                { type: 'Dashboard', id: 'STATS' },
+                { type: 'Students', id: 'LIST' },
+            ],
+        }),
         // Students
         getStudents: builder.query<any, {
             page?: number;
@@ -339,6 +354,7 @@ export const adminApi = createApi({
 });
 
 export const {
+    useGetDashboardStatsQuery,
     useGetStudentsQuery,
     useGetPreviewAdmissionNumberQuery,
     useGetStudentByIdQuery,

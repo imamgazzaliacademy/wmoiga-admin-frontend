@@ -119,193 +119,195 @@ export default function CreateEditExaminationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95">
         {/* Header - Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
-          <div className="flex items-center gap-2.5">
-            <Award size={18} className="text-neutral-300" />
-            <div>
-              <h2 className="text-base font-bold">
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <Award size={18} className="text-neutral-300 shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-bold truncate">
                 {examination ? "Edit Examination Event" : "Create Examination Cycle"}
               </h2>
-              <p className="text-xs text-neutral-400">
+              <p className="text-[11px] sm:text-xs text-neutral-400 truncate">
                 Shared cycle for all academy classes with class-specific subject evaluations.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="shrink-0 p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-              Examination Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Semester 1 Examination 2026, Annual Examination 2026"
-              className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+          <div className="p-4 sm:p-6 space-y-4 flex-1">
             <div>
               <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                Exam Type
-              </label>
-              <select
-                value={examType}
-                onChange={(e) => setExamType(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
-              >
-                <option value="Semester">Semester</option>
-                <option value="Annual">Annual</option>
-                <option value="Mid-Term">Mid-Term</option>
-                <option value="Model">Model Exam</option>
-                <option value="Entrance">Entrance Exam</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                Academic Year <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={academicYear}
-                onChange={(e) => setAcademicYear(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
-              >
-                <option value="2025-2026">2025-2026</option>
-                <option value="2024-2025">2024-2025</option>
-                <option value="2026-2027">2026-2027</option>
-                <option value="2027-2028">2027-2028</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                Semester / Category
+                Examination Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                value={semester}
-                onChange={(e) => setSemester(e.target.value)}
-                placeholder="e.g. Semester 1"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Semester 1 Examination 2026, Annual Examination 2026"
                 className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
               />
             </div>
-          </div>
 
-          {/* Schedule Dates & Lifecycle Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                Start Date
-              </label>
-              <div className="relative">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  Exam Type
+                </label>
+                <select
+                  value={examType}
+                  onChange={(e) => setExamType(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
+                >
+                  <option value="Semester">Semester</option>
+                  <option value="Annual">Annual</option>
+                  <option value="Mid-Term">Mid-Term</option>
+                  <option value="Model">Model Exam</option>
+                  <option value="Entrance">Entrance Exam</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  Academic Year <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={academicYear}
+                  onChange={(e) => setAcademicYear(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
+                >
+                  <option value="2025-2026">2025-2026</option>
+                  <option value="2024-2025">2024-2025</option>
+                  <option value="2026-2027">2026-2027</option>
+                  <option value="2027-2028">2027-2028</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  Semester / Category
+                </label>
                 <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  type="text"
+                  value={semester}
+                  onChange={(e) => setSemester(e.target.value)}
+                  placeholder="e.g. Semester 1"
                   className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                End Date
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
+            {/* Schedule Dates & Lifecycle Status */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  Start Date
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  End Date
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  Lifecycle Status
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as any)}
+                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
+                >
+                  <option value="Draft">Draft (Setup)</option>
+                  <option value="Open">Open (Active)</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Archived">Archived</option>
+                </select>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                Lifecycle Status
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
-              >
-                <option value="Draft">Draft (Setup)</option>
-                <option value="Open">Open (Active)</option>
-                <option value="Completed">Completed</option>
-                <option value="Archived">Archived</option>
-              </select>
-            </div>
-          </div>
+            {/* Publication Toggles */}
+            <div className="p-3 sm:p-4 rounded-lg bg-neutral-50 border border-neutral-200 space-y-3">
+              <div className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
+                Student Portal Availability Controls
+              </div>
 
-          {/* Publication Toggles */}
-          <div className="p-4 rounded-lg bg-neutral-50 border border-neutral-200 space-y-3">
-            <div className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-              Student Portal Availability Controls
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isHallTicketPublished}
+                    onChange={(e) => setIsHallTicketPublished(e.target.checked)}
+                    className="mt-0.5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                  />
+                  <div>
+                    <span className="font-semibold text-neutral-900 block">Publish Hall Tickets</span>
+                    <span className="text-[11px] text-neutral-500">
+                      Allows eligible students to download their hall ticket.
+                    </span>
+                  </div>
+                </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label className="flex items-start gap-2.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={isHallTicketPublished}
-                  onChange={(e) => setIsHallTicketPublished(e.target.checked)}
-                  className="mt-0.5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                />
-                <div>
-                  <span className="font-semibold text-neutral-900 block">Publish Hall Tickets</span>
-                  <span className="text-[11px] text-neutral-500">
-                    Allows eligible students to download their hall ticket.
-                  </span>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-2.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={isResultPublished}
-                  onChange={(e) => setIsResultPublished(e.target.checked)}
-                  className="mt-0.5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                />
-                <div>
-                  <span className="font-semibold text-neutral-900 block">Publish Examination Results</span>
-                  <span className="text-[11px] text-neutral-500">
-                    Makes finalized mark sheets accessible in the Student Portal.
-                  </span>
-                </div>
-              </label>
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isResultPublished}
+                    onChange={(e) => setIsResultPublished(e.target.checked)}
+                    className="mt-0.5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                  />
+                  <div>
+                    <span className="font-semibold text-neutral-900 block">Publish Examination Results</span>
+                    <span className="text-[11px] text-neutral-500">
+                      Makes finalized mark sheets accessible in the Student Portal.
+                    </span>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
           {/* Footer Buttons - Solid Black and White */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200">
+          <div className="shrink-0 flex items-center justify-end gap-2 sm:gap-3 p-3 sm:px-6 bg-neutral-50 border-t border-neutral-200">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-4 sm:px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {submitting ? (
                 <>
@@ -315,7 +317,7 @@ export default function CreateEditExaminationModal({
               ) : (
                 <>
                   <CheckCircle2 size={15} />
-                  <span>{examination ? "Update Cycle" : "Create Examination Cycle"}</span>
+                  <span>{examination ? "Update Cycle" : "Create Cycle"}</span>
                 </>
               )}
             </button>

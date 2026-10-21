@@ -182,7 +182,7 @@ export default function AdmissionPage() {
                     <h1 className="text-2xl font-bold text-foreground">Admission Management</h1>
                     <p className="text-gray-500">Manage student applications and hall tickets.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button
                         onClick={exportToExcel}
                         className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
@@ -217,7 +217,7 @@ export default function AdmissionPage() {
                     {loading ? (
                         <TableSkeleton columns={6} rows={5} />
                     ) : (
-                        <Table>
+                        <Table className="min-w-[850px] whitespace-nowrap">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Register No</TableHead>
@@ -295,22 +295,22 @@ export default function AdmissionPage() {
 
             {/* Pagination */}
             {metadata && metadata.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                    <span className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+                    <span className="text-sm text-gray-600 text-center sm:text-left">
                         Showing page {metadata.page} of {metadata.totalPages} ({metadata.total} total)
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="p-2 border rounded-md disabled:opacity-50 hover:bg-gray-50 bg-white"
+                            className="p-2 border rounded-md disabled:opacity-50 hover:bg-gray-50 bg-white transition-colors"
                         >
                             <ChevronLeft size={16} />
                         </button>
                         <button
                             onClick={() => setPage(p => Math.min(metadata.totalPages, p + 1))}
                             disabled={page === metadata.totalPages}
-                            className="p-2 border rounded-md disabled:opacity-50 hover:bg-gray-50 bg-white"
+                            className="p-2 border rounded-md disabled:opacity-50 hover:bg-gray-50 bg-white transition-colors"
                         >
                             <ChevronRight size={16} />
                         </button>
@@ -320,17 +320,17 @@ export default function AdmissionPage() {
 
             {/* Applicant Details Modal */}
             {selectedApp && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                        <div className="flex justify-between items-center p-6 border-b">
-                            <h2 className="text-xl font-bold flex items-center gap-2">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                        <div className="shrink-0 flex justify-between items-center p-4 sm:p-6 border-b">
+                            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
                                 <User className="text-primary" /> Application Details
                             </h2>
                             <button onClick={() => setSelectedApp(null)} className="text-gray-500 hover:text-red-500 transition-colors">
-                                <X size={24} />
+                                <X size={22} />
                             </button>
                         </div>
-                        <div className="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0 bg-gray-50/50">
                             <div className="grid md:grid-cols-3 gap-6">
                                 {/* Photo & Basic Info */}
                                 <div className="space-y-6">
@@ -430,29 +430,29 @@ export default function AdmissionPage() {
 
             {/* Delete Confirmation Modal */}
             {deleteModalAppId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col transform transition-all">
-                        <div className="p-6 text-center space-y-4">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
-                                <Trash2 size={24} className="text-red-500" />
+                        <div className="p-4 sm:p-6 text-center space-y-3 sm:space-y-4">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 border-4 border-white shadow-sm">
+                                <Trash2 size={22} className="text-red-500" />
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900">Delete Application</h2>
-                            <p className="text-sm text-gray-500">
+                            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Delete Application</h2>
+                            <p className="text-xs sm:text-sm text-gray-500">
                                 Are you sure you want to delete this application? This action cannot be undone. All associated data will be permanently removed.
                             </p>
                         </div>
-                        <div className="bg-gray-50 flex items-center justify-end gap-3 px-6 py-4 border-t">
+                        <div className="bg-gray-50 flex flex-wrap items-center justify-end gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t">
                             <button
                                 onClick={() => setDeleteModalAppId(null)}
                                 disabled={isDeleting}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 bg-white border rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                className="px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 bg-white border rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmDeleteApp}
                                 disabled={isDeleting}
-                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                className="px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                             >
                                 {isDeleting ? "Deleting..." : "Delete Permanently"}
                             </button>

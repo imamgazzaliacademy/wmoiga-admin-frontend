@@ -1,64 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
     Users,
     GraduationCap,
     FileText,
     TrendingUp,
     Bell,
-    ArrowRight
+    ArrowRight,
+    RefreshCw
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import apiClient from "@/services/api";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface DashboardStats {
-    totalStudents: string;
-    totalAlumni: number;
-    totalApplications: number;
-    totalAnnouncements: number;
-    recentApplications: any[];
-}
+import { useGetDashboardStatsQuery } from "@/store/api/adminApi";
 
 export default function DashboardPage() {
-    const [stats, setStats] = useState<DashboardStats | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await apiClient.get('/get_dashboard_stats');
-                if (response.data.success) {
-                    setStats(response.data.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch dashboard stats", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-    }, []);
+    const { data: stats, isLoading: loading, isFetching, refetch } = useGetDashboardStatsQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+    });
 
     const statCards = [
         {
             title: "Total Students",
-            value: stats?.totalStudents || "0",
+            value: stats?.totalStudents !== undefined ? stats.totalStudents : 0,
             icon: Users,
             description: "Active students enrolled",
         },
         {
             title: "Total Alumni",
-            value: stats?.totalAlumni || 0,
+            value: stats?.totalAlumni !== undefined ? stats.totalAlumni : 0,
             icon: GraduationCap,
             description: "Registered alumni members",
         },
         {
             title: "Total Applications",
-            value: stats?.totalApplications || 0,
+            value: stats?.totalApplications !== undefined ? stats.totalApplications : 0,
             icon: FileText,
             description: "Admissions processed",
         },
@@ -66,9 +42,20 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
-                <p className="text-gray-500 mt-2">Welcome back, Administrator. Here's what's happening today.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
+                    <p className="text-gray-500 mt-2">Welcome back, Administrator. Here's what's happening today.</p>
+                </div>
+                <button
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 transition-colors border border-neutral-300 shadow-2xs self-start sm:self-auto disabled:opacity-50"
+                    title="Refresh Stats"
+                >
+                    <RefreshCw size={14} className={isFetching ? "animate-spin" : ""} />
+                    <span>Refresh</span>
+                </button>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

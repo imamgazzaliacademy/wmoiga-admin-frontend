@@ -19,10 +19,10 @@ export default function Header({ onMenuClick, isOpen }: HeaderProps) {
   };
 
   return (
-    <header className="h-16 px-6 sticky top-0 z-50 lg:px-8 bg-white border-b border-border flex items-center justify-between shadow-sm">
+    <header className="h-16 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 bg-white border-b border-border flex items-center justify-between shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="font-bold text-lg sm:text-xl text-[#b38e44]">
-          <img src="/fullLogo.png" alt="" className="w-50 " />
+        <div className="font-bold text-base sm:text-xl text-[#b38e44]">
+          <img src="/fullLogo.png" alt="WMO IGA" className="w-36 sm:w-44 object-contain" />
         </div>
       </div>
 

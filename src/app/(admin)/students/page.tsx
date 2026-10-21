@@ -27,11 +27,14 @@ import { TableSkeletonRows } from "@/components/ui/table-skeleton";
 import { useFetch } from "@/hooks/useFetch";
 import apiClient from "@/services/api";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { adminApi } from "@/store/api/adminApi";
 import StudentRegistrationModal, { SUPPORTED_CLASSES } from "@/components/students/StudentRegistrationModal";
 import StudentEditModal from "@/components/students/StudentEditModal";
 import StudentProfileModal from "@/components/students/StudentProfileModal";
 
 export default function StudentsPage() {
+  const dispatch = useDispatch();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedYear, setSelectedYear] = useState<string>("");
@@ -62,6 +65,7 @@ export default function StudentsPage() {
     setIsDeleting(true);
     try {
       await apiClient.delete(`/students/${deletingStudent.id}`);
+      dispatch(adminApi.util.invalidateTags([{ type: 'Students', id: 'LIST' }]));
       toast.success(`Student ${deletingStudent.full_name} deleted successfully`);
       setDeletingStudent(null);
       refetch();
@@ -227,7 +231,7 @@ export default function StudentsPage() {
       {/* Students Data Table */}
       <Card className="bg-white border border-neutral-200 shadow-none overflow-hidden">
         <CardContent className="p-0">
-          <Table>
+          <Table className="min-w-[850px] whitespace-nowrap">
             <TableHeader className="bg-neutral-50 border-b border-neutral-200">
               <TableRow>
                 <TableHead className="w-14">Photo</TableHead>
@@ -356,12 +360,12 @@ export default function StudentsPage() {
 
           {/* Pagination */}
           {metadata && metadata.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 bg-neutral-50/50 text-xs text-neutral-600">
-              <div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-neutral-200 bg-neutral-50/50 text-xs text-neutral-600">
+              <div className="text-center sm:text-left">
                 Showing page <span className="font-semibold text-neutral-900">{metadata.currentPage || metadata.page}</span> of{" "}
                 <span className="font-semibold text-neutral-900">{metadata.totalPages}</span> ({metadata.totalItems || metadata.total} total students)
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage(page - 1)}
@@ -385,15 +389,15 @@ export default function StudentsPage() {
 
       {/* Delete Confirmation Modal */}
       {deletingStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-xl p-5 shadow-2xl border border-neutral-200 space-y-3">
-            <h3 className="text-base font-bold text-neutral-900">Confirm Deletion</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white rounded-xl p-4 sm:p-5 shadow-2xl border border-neutral-200 space-y-3 animate-in fade-in zoom-in-95">
+            <h3 className="text-sm sm:text-base font-bold text-neutral-900">Confirm Deletion</h3>
             <p className="text-xs text-neutral-600 leading-relaxed">
               Are you sure you want to delete student{" "}
               <span className="font-bold text-neutral-900">{deletingStudent.full_name}</span> (Admission No:{" "}
               <span className="font-mono font-bold">{deletingStudent.admission_number}</span>)? This will permanently remove their records.
             </p>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
               <button
                 onClick={() => setDeletingStudent(null)}
                 disabled={isDeleting}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, BookOpen, CheckCircle2, Trash2, Plus, RefreshCw, Check } from "lucide-react";
+import { X, BookOpen, Calendar, Clock, RefreshCw } from "lucide-react";
 import apiClient from "@/services/api";
 import { toast } from "react-toastify";
 import { SUPPORTED_CLASSES } from "@/components/students/StudentRegistrationModal";
@@ -22,6 +22,8 @@ interface SubjectRowConfig {
   max_marks: number;
   pass_marks: number;
   display_order: number;
+  exam_date: string;
+  time_slot: "Morning" | "Afternoon" | "";
 }
 
 export default function SubjectConfigModal({
@@ -35,6 +37,8 @@ export default function SubjectConfigModal({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [subjectRows, setSubjectRows] = useState<SubjectRowConfig[]>([]);
+  const [examStartDate, setExamStartDate] = useState<string>("");
+  const [examEndDate, setExamEndDate] = useState<string>("");
 
   // Load available global subjects for selectedClass AND currently configured subjects for (exam, class)
   const loadClassSubjects = async () => {
@@ -42,13 +46,20 @@ export default function SubjectConfigModal({
     setLoading(true);
 
     try {
-      // 1. Fetch global subjects for this class
+      // 1. Fetch exam cycle details to get start/end dates for date-picker bounds
+      const examRes = await apiClient.get(`/examinations/${examinationId}`);
+      if (examRes.data?.data) {
+        setExamStartDate(examRes.data.data.start_date || "");
+        setExamEndDate(examRes.data.data.end_date || "");
+      }
+
+      // 2. Fetch global subjects for this class
       const globalRes = await apiClient.get("/subjects", {
         params: { class_name: selectedClass, limit: 100 },
       });
       const globalList: any[] = globalRes.data?.data || [];
 
-      // 2. Fetch currently configured subjects for this examination and class
+      // 3. Fetch currently configured subjects for this examination and class
       const configuredRes = await apiClient.get(
         `/examinations/${examinationId}/classes/${selectedClass}/subjects`
       );
@@ -71,6 +82,8 @@ export default function SubjectConfigModal({
           max_marks: existing ? existing.max_marks : 100,
           pass_marks: existing ? existing.pass_marks : 35,
           display_order: existing ? existing.display_order : idx + 1,
+          exam_date: existing?.exam_date ? String(existing.exam_date).slice(0, 10) : "",
+          time_slot: existing?.time_slot || "",
         };
       });
 
@@ -97,10 +110,10 @@ export default function SubjectConfigModal({
     );
   };
 
-  const handleUpdateMarks = (
+  const handleUpdateField = (
     index: number,
-    field: "max_marks" | "pass_marks" | "display_order",
-    value: number
+    field: keyof SubjectRowConfig,
+    value: any
   ) => {
     setSubjectRows((prev) =>
       prev.map((row, idx) => (idx === index ? { ...row, [field]: value } : row))
@@ -120,7 +133,13 @@ export default function SubjectConfigModal({
 
     const selected = subjectRows.filter((r) => r.is_selected);
 
-    // Validate marks
+    if (selected.length === 0) {
+      toast.warn("Please select at least one subject to configure for this class");
+    }
+
+    // Validate marks, dates, and timetable conflicts
+    const scheduleSlotSet = new Set<string>();
+
     for (const s of selected) {
       if (s.max_marks <= 0) {
         toast.error(`Maximum marks for ${s.name} must be greater than zero`);
@@ -134,6 +153,34 @@ export default function SubjectConfigModal({
         toast.error(`Pass marks for ${s.name} cannot exceed maximum marks`);
         return;
       }
+
+      // Validate examination date against examination cycle bounds
+      if (s.exam_date) {
+        if (examStartDate && s.exam_date < examStartDate) {
+          toast.error(
+            `Examination date for ${s.name} (${s.exam_date}) cannot be before the examination cycle start date (${examStartDate})`
+          );
+          return;
+        }
+        if (examEndDate && s.exam_date > examEndDate) {
+          toast.error(
+            `Examination date for ${s.name} (${s.exam_date}) cannot be after the examination cycle end date (${examEndDate})`
+          );
+          return;
+        }
+
+        // Time slot conflict validation
+        if (s.time_slot) {
+          const slotKey = `${s.exam_date}_${s.time_slot}`;
+          if (scheduleSlotSet.has(slotKey)) {
+            toast.error(
+              `Timetable conflict: Multiple subjects are scheduled for ${s.time_slot} on ${s.exam_date} for Class ${selectedClass}. Only one examination is permitted per time slot.`
+            );
+            return;
+          }
+          scheduleSlotSet.add(slotKey);
+        }
+      }
     }
 
     setSaving(true);
@@ -145,6 +192,8 @@ export default function SubjectConfigModal({
           max_marks: Number(s.max_marks),
           pass_marks: Number(s.pass_marks),
           display_order: Number(s.display_order) || idx + 1,
+          exam_date: s.exam_date || null,
+          time_slot: s.time_slot || null,
         })),
       };
 
@@ -154,7 +203,7 @@ export default function SubjectConfigModal({
       );
 
       toast.success(
-        `Configured ${selected.length} subjects for Class ${selectedClass}`
+        `Configured ${selected.length} subjects & timetable for Class ${selectedClass}`
       );
       onUpdated?.();
       loadClassSubjects();
@@ -169,40 +218,45 @@ export default function SubjectConfigModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-5xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-neutral-200 overflow-hidden my-auto flex flex-col animate-in fade-in zoom-in-95">
         {/* Header - Standard Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
           <div className="flex items-center gap-2.5">
-            <BookOpen size={18} className="text-neutral-300" />
+            <BookOpen size={18} className="text-neutral-300 shrink-0" />
             <div>
-              <h2 className="text-base font-bold">Class-Wise Subject Configuration</h2>
-              <p className="text-xs text-neutral-400">
+              <h2 className="text-sm sm:text-base font-bold">Class-Wise Subject Configuration & Timetable</h2>
+              <p className="text-[11px] sm:text-xs text-neutral-400">
                 Examination Event: <span className="text-white font-semibold">{examinationName}</span>
+                {examStartDate && examEndDate && (
+                  <span className="ml-1 sm:ml-2 font-mono text-neutral-300">
+                    ({examStartDate} to {examEndDate})
+                  </span>
+                )}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Class Selection Tabs */}
-        <div className="px-6 pt-4 pb-2 bg-neutral-50/50 border-b border-neutral-200">
-          <div className="text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-2">
+        <div className="shrink-0 px-4 sm:px-6 pt-3 pb-2 bg-neutral-50/50 border-b border-neutral-200">
+          <div className="text-[11px] font-semibold text-neutral-700 uppercase tracking-wider mb-1.5">
             Select Class to Configure
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex overflow-x-auto gap-1.5 pb-1 scrollbar-thin">
             {SUPPORTED_CLASSES.map((cls) => {
               const isSelected = selectedClass === cls.value;
               return (
                 <button
                   key={cls.value}
                   onClick={() => setSelectedClass(cls.value)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
                     isSelected
                       ? "bg-neutral-900 text-white shadow-xs"
                       : "bg-white text-neutral-700 hover:bg-neutral-200/70 border border-neutral-200"
@@ -216,14 +270,14 @@ export default function SubjectConfigModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                Available Subjects for Class {selectedClass}
+                Subjects & Schedule for Class {selectedClass}
               </h3>
               <p className="text-xs text-neutral-500">
-                Check subjects applicable to this examination cycle and configure their maximum and pass marks.
+                Select applicable subjects, configure marks, examination date, and time slot.
               </p>
             </div>
 
@@ -268,16 +322,18 @@ export default function SubjectConfigModal({
               </p>
             </div>
           ) : (
-            <div className="border border-neutral-200 rounded-lg overflow-hidden">
-              <table className="w-full text-left text-xs">
+            <div className="border border-neutral-200 rounded-lg overflow-x-auto scrollbar-thin">
+              <table className="w-full min-w-[780px] text-left text-xs whitespace-nowrap">
                 <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold">
                   <tr>
-                    <th className="p-3 w-10">Include</th>
+                    <th className="p-3 w-10 text-center">Include</th>
                     <th className="p-3">Subject Name</th>
-                    <th className="p-3 w-28">Code</th>
-                    <th className="p-3 w-28">Max Marks</th>
-                    <th className="p-3 w-28">Pass Marks</th>
-                    <th className="p-3 w-20">Order</th>
+                    <th className="p-3 w-24">Code</th>
+                    <th className="p-3 w-24">Max Marks</th>
+                    <th className="p-3 w-24">Pass Marks</th>
+                    <th className="p-3 w-36">Exam Date</th>
+                    <th className="p-3 w-44">Time Slot</th>
+                    <th className="p-3 w-16 text-center">Order</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
@@ -314,9 +370,9 @@ export default function SubjectConfigModal({
                           min={1}
                           value={row.max_marks}
                           onChange={(e) =>
-                            handleUpdateMarks(idx, "max_marks", Number(e.target.value))
+                            handleUpdateField(idx, "max_marks", Number(e.target.value))
                           }
-                          className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100"
+                          className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
                         />
                       </td>
 
@@ -327,22 +383,51 @@ export default function SubjectConfigModal({
                           min={0}
                           value={row.pass_marks}
                           onChange={(e) =>
-                            handleUpdateMarks(idx, "pass_marks", Number(e.target.value))
+                            handleUpdateField(idx, "pass_marks", Number(e.target.value))
                           }
-                          className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100"
+                          className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
                         />
                       </td>
 
                       <td className="p-3">
+                        <input
+                          type="date"
+                          disabled={!row.is_selected}
+                          min={examStartDate || undefined}
+                          max={examEndDate || undefined}
+                          value={row.exam_date}
+                          onChange={(e) =>
+                            handleUpdateField(idx, "exam_date", e.target.value)
+                          }
+                          className="w-32 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
+                        />
+                      </td>
+
+                      <td className="p-3">
+                        <select
+                          disabled={!row.is_selected}
+                          value={row.time_slot}
+                          onChange={(e) =>
+                            handleUpdateField(idx, "time_slot", e.target.value)
+                          }
+                          className="w-40 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 bg-white"
+                        >
+                          <option value="">No slot selected</option>
+                          <option value="Morning">Morning (8:00 AM – 10:00 AM)</option>
+                          <option value="Afternoon">Afternoon (2:00 PM – 4:00 PM)</option>
+                        </select>
+                      </td>
+
+                      <td className="p-3 text-center">
                         <input
                           type="number"
                           disabled={!row.is_selected}
                           min={1}
                           value={row.display_order}
                           onChange={(e) =>
-                            handleUpdateMarks(idx, "display_order", Number(e.target.value))
+                            handleUpdateField(idx, "display_order", Number(e.target.value))
                           }
-                          className="w-14 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100"
+                          className="w-12 text-center px-1 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100"
                         />
                       </td>
                     </tr>
@@ -353,38 +438,28 @@ export default function SubjectConfigModal({
           )}
         </div>
 
-        {/* Footer Buttons - Solid Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-200 bg-neutral-50/50">
-          <div className="text-xs text-neutral-500">
-            Selected: <span className="font-bold text-neutral-900">{subjectRows.filter((r) => r.is_selected).length}</span> subjects for Class {selectedClass}
+        {/* Footer */}
+        <div className="shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-neutral-50 border-t border-neutral-200">
+          <div className="text-xs text-neutral-500 self-start sm:self-auto">
+            Selected: <strong className="text-neutral-900">{subjectRows.filter((r) => r.is_selected).length}</strong> of {subjectRows.length} subjects
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
+              className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-100 transition-colors text-center"
             >
-              Close
+              Cancel
             </button>
             <button
               type="button"
               onClick={handleSaveConfiguration}
-              disabled={saving || loading}
-              className="px-5 py-2 text-xs font-medium text-white bg-neutral-900 hover:bg-black rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
+              disabled={saving}
+              className="flex-1 sm:flex-none px-4 sm:px-5 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-black rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50 text-center"
             >
-              {saving ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Saving Configuration...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 size={15} />
-                  <span>Save Configuration for Class {selectedClass}</span>
-                </>
-              )}
+              <span>{saving ? "Saving..." : "Save Configuration & Timetable"}</span>
             </button>
           </div>
         </div>

@@ -81,50 +81,50 @@ export default function StudentProfileModal({ isOpen, studentId, onClose }: Prop
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header - Black and White */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-900 text-white border-b border-neutral-800">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white">
-              <User size={18} />
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-neutral-900 text-white border-b border-neutral-800">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center text-white shrink-0">
+              <User size={16} />
             </div>
-            <div>
-              <h2 className="text-base font-bold">Student Comprehensive Profile</h2>
-              <p className="text-xs text-neutral-400">Official student record and academic examination tracking</p>
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-bold truncate">Student Profile</h2>
+              <p className="text-[11px] sm:text-xs text-neutral-400 truncate">Official student record and academic examination tracking</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors">
+          <button onClick={onClose} className="shrink-0 p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center gap-2 px-6 pt-4 border-b border-neutral-200 bg-neutral-50/50">
+        <div className="shrink-0 flex items-center gap-2 px-4 sm:px-6 pt-3 border-b border-neutral-200 bg-neutral-50/50 overflow-x-auto scrollbar-thin">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 ${
+            className={`px-3 sm:px-4 py-2 text-xs font-semibold rounded-t-lg whitespace-nowrap transition-all border-b-2 ${
               activeTab === "profile"
                 ? "border-neutral-900 text-neutral-900 bg-white"
                 : "border-transparent text-neutral-500 hover:text-neutral-900"
             }`}
           >
-            Personal & Academic Information
+            Personal & Academic Info
           </button>
           <button
             onClick={() => setActiveTab("examinations")}
-            className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 ${
+            className={`px-3 sm:px-4 py-2 text-xs font-semibold rounded-t-lg whitespace-nowrap transition-all border-b-2 ${
               activeTab === "examinations"
                 ? "border-neutral-900 text-neutral-900 bg-white"
                 : "border-transparent text-neutral-500 hover:text-neutral-900"
             }`}
           >
-            Examinations, Eligibility & Results
+            Examinations & Results
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 max-h-[75vh] overflow-y-auto space-y-6">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 min-h-0">
           {loading ? (
             <div className="py-16 text-center text-xs text-neutral-500">
               <div className="w-7 h-7 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -162,7 +162,7 @@ export default function StudentProfileModal({ isOpen, studentId, onClose }: Prop
                     <span className="text-neutral-500">•</span>
                     <span className="font-medium text-neutral-800">Class: {student.class_name}</span>
                     <span className="text-neutral-500">•</span>
-                    <span className="text-neutral-600">Batch {student.admission_year}</span>
+                    <span className="text-neutral-600">Batch {`${student.admission_year}/${String(student.admission_year + 1).slice(-2)}`}</span>
                   </div>
                 </div>
               </div>
@@ -328,10 +328,10 @@ export default function StudentProfileModal({ isOpen, studentId, onClose }: Prop
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex justify-end">
+        <div className="shrink-0 px-4 sm:px-6 py-3 border-t border-neutral-200 bg-neutral-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-neutral-100 transition-colors"
           >
             Close
           </button>

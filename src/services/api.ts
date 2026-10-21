@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // Client-side API requests hit the local Next.js proxy route middleware
-// We set baseURL to /api/atc to hit the proxy which forwards to backend's /atc
+// We set baseURL to /api to hit the proxy which forwards to backend's /atc
 const apiClient = axios.create({
-    baseURL: '/api/atc',
+    baseURL: '/api',
 });
 
 // Request interceptor to add the standard auth token

@@ -366,15 +366,15 @@ export default function ExaminationsPage() {
 
       {/* Delete Confirmation Modal */}
       {deletingExam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-xl p-5 shadow-2xl border border-neutral-200 space-y-3">
-            <h3 className="text-base font-bold text-neutral-900">Confirm Deletion</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white rounded-xl p-4 sm:p-5 shadow-2xl border border-neutral-200 space-y-3 animate-in fade-in zoom-in-95">
+            <h3 className="text-sm sm:text-base font-bold text-neutral-900">Confirm Deletion</h3>
             <p className="text-xs text-neutral-600 leading-relaxed">
               Are you sure you want to delete examination cycle{" "}
               <strong className="text-neutral-900">"{deletingExam.name}"</strong>?
               This will remove all associated marks and eligibility records for all classes.
             </p>
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
               <button
                 onClick={() => setDeletingExam(null)}
                 disabled={isDeleting}

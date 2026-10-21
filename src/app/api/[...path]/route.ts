@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:5000/atc';
 
 async function handleProxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
     try {
