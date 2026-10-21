@@ -10,6 +10,8 @@ import {
   FileText,
   Megaphone,
   CalendarDays,
+  Award,
+  BookOpen,
 } from "lucide-react";
 
 const menuItems = [
@@ -17,7 +19,9 @@ const menuItems = [
   { name: "Admission", icon: FileText, href: "/admission" },
   { name: "Important Dates", icon: CalendarDays, href: "/important-dates" },
   { name: "Announcement", icon: Megaphone, href: "/announcement" },
-  { name: "Students", icon: Users, href: "/students", badge: "Soon" },
+  { name: "Students", icon: Users, href: "/students" },
+  { name: "Subjects", icon: BookOpen, href: "/subjects" },
+  { name: "Examinations", icon: Award, href: "/examinations" },
   { name: "Alumni", icon: GraduationCap, href: "/alumni", badge: "Soon" },
 ];
 

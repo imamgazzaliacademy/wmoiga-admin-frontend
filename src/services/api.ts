@@ -17,4 +17,19 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
+// Response interceptor to handle session expiration (401 Unauthorized)
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (typeof window !== 'undefined' && error.response?.status === 401) {
+            localStorage.removeItem('adminToken');
+            sessionStorage.setItem('session_expired_msg', 'Your session has expired. Please log in again.');
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default apiClient;

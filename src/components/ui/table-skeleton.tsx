@@ -1,3 +1,4 @@
+import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Table,
@@ -13,29 +14,37 @@ interface TableSkeletonProps {
     rows?: number;
 }
 
+export function TableSkeletonRows({ columns, rows = 5 }: TableSkeletonProps) {
+    return (
+        <>
+            {Array.from({ length: rows }).map((_, rowIndex) => (
+                <TableRow key={rowIndex} className="border-b border-neutral-100">
+                    {Array.from({ length: columns }).map((_, colIndex) => (
+                        <TableCell key={colIndex} className="py-3 px-4">
+                            <Skeleton className="h-4 w-full bg-neutral-200/80 rounded" />
+                        </TableCell>
+                    ))}
+                </TableRow>
+            ))}
+        </>
+    );
+}
+
 export function TableSkeleton({ columns, rows = 5 }: TableSkeletonProps) {
     return (
-        <div className="w-full">
+        <div className="w-full border border-neutral-200 rounded-lg overflow-hidden bg-white">
             <Table>
-                <TableHeader>
-                    <TableRow>
+                <TableHeader className="bg-neutral-50">
+                    <TableRow className="border-b border-neutral-200">
                         {Array.from({ length: columns }).map((_, i) => (
-                            <TableHead key={i}>
-                                <Skeleton className="h-4 w-3/4" />
+                            <TableHead key={i} className="py-3 px-4">
+                                <Skeleton className="h-4 w-3/4 bg-neutral-200/80 rounded" />
                             </TableHead>
                         ))}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {Array.from({ length: rows }).map((_, rowIndex) => (
-                        <TableRow key={rowIndex}>
-                            {Array.from({ length: columns }).map((_, colIndex) => (
-                                <TableCell key={colIndex}>
-                                    <Skeleton className="h-4 w-full" />
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    ))}
+                    <TableSkeletonRows columns={columns} rows={rows} />
                 </TableBody>
             </Table>
         </div>

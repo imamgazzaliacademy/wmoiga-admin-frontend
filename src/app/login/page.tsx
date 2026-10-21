@@ -14,6 +14,13 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
 
     useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const msg = sessionStorage.getItem('session_expired_msg');
+            if (msg) {
+                toast.warning(msg);
+                sessionStorage.removeItem('session_expired_msg');
+            }
+        }
         if (localStorage.getItem("adminToken")) {
             router.push("/dashboard");
         }

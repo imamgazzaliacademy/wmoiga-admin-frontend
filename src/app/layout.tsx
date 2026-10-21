@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: "Administrative Dashboard for IgaOnline",
 };
 
+import { StoreProvider } from "@/store/StoreProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased bg-secondary/30 min-h-screen`}>
-        {children}
+        <StoreProvider>
+          {children}
+        </StoreProvider>
         <ToastContainer position="top-right" autoClose={3000} />
       </body>
     </html>
