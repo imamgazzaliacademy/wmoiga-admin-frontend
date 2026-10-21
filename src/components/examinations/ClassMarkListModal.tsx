@@ -174,11 +174,10 @@ export default function ClassMarkListModal({
                   <button
                     key={cls.value}
                     onClick={() => setSelectedClass(cls.value)}
-                    className={`px-2.5 sm:px-3 py-1 rounded text-xs font-semibold whitespace-nowrap transition-all ${
-                      isSelected
+                    className={`px-2.5 sm:px-3 py-1 rounded text-xs font-semibold whitespace-nowrap transition-all ${isSelected
                         ? "bg-neutral-900 text-white"
                         : "bg-white text-neutral-700 hover:bg-neutral-200 border border-neutral-200"
-                    }`}
+                      }`}
                   >
                     {cls.label}
                   </button>
@@ -326,11 +325,10 @@ export default function ClassMarkListModal({
                           {resRecord ? (
                             resRecord.is_complete ? (
                               <span
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                  resRecord.is_passed
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${resRecord.is_passed
                                     ? "bg-neutral-100 text-neutral-900 border border-neutral-300"
                                     : "bg-red-50 text-red-700 border border-red-200"
-                                }`}
+                                  }`}
                               >
                                 {resRecord.is_passed ? "PASSED" : "FAILED"}
                               </span>
@@ -345,7 +343,7 @@ export default function ClassMarkListModal({
                         <td className="p-3 text-center">
                           {resRecord && resRecord.class_rank !== null ? (
                             <span className="font-mono font-bold bg-neutral-900 text-white px-2 py-0.5 rounded text-[11px]">
-                              #{resRecord.class_rank}
+                              {resRecord.class_rank}
                             </span>
                           ) : (
                             <span className="text-neutral-400">-</span>
