@@ -254,7 +254,7 @@ export default function ClassMarkListModal({
                     <th className="p-3">Admission No</th>
                     <th className="p-3">Student Name</th>
                     {subjects.map((subj) => (
-                      <th key={subj.subject_id || subj.id} className="p-3 text-center">
+                      <th key={subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id)} className="p-3 text-center">
                         <div>{subj.name}</div>
                         <div className="text-[10px] font-normal text-neutral-400">
                           (Max: {subj.max_marks})
@@ -271,7 +271,7 @@ export default function ClassMarkListModal({
                   {filteredStudents.map((std, idx) => {
                     const markMap = new Map<number, any>();
                     if (std.marks) {
-                      std.marks.forEach((m: any) => markMap.set(m.subject_id, m));
+                      std.marks.forEach((m: any) => markMap.set(Number(m.subject_id), m));
                     }
                     const resRecord = std.results && std.results.length > 0 ? std.results[0] : null;
 
@@ -284,7 +284,7 @@ export default function ClassMarkListModal({
                         <td className="p-3 font-semibold text-neutral-900">{std.full_name}</td>
 
                         {subjects.map((subj) => {
-                          const subjKey = subj.subject_id || subj.id;
+                          const subjKey = subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id);
                           const mark = markMap.get(subjKey);
                           if (!mark) {
                             return (

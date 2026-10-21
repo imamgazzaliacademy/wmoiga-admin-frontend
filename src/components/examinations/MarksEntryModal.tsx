@@ -144,7 +144,7 @@ export default function MarksEntryModal({
     if (!examinationId || !selectedStudentId) return;
 
     const marksPayload = subjects.map((subj) => {
-      const subjKey = subj.subject_id || subj.id;
+      const subjKey = subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id);
       const entry = marksState[subjKey] || { marks_obtained: 0, is_absent: false };
       return {
         subject_id: subjKey,
@@ -422,7 +422,7 @@ export default function MarksEntryModal({
                     </thead>
                     <tbody className="divide-y divide-neutral-100">
                       {subjects.map((subj) => {
-                        const subjKey = subj.subject_id || subj.id;
+                        const subjKey = subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id);
                         const entry = marksState[subjKey] || { marks_obtained: 0, is_absent: false };
                         const isPassed = !entry.is_absent && entry.marks_obtained >= subj.pass_marks;
 
