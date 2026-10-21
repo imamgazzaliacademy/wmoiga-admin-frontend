@@ -118,11 +118,10 @@ export default function StudentsPage() {
               setSelectedClass("all");
               setPage(1);
             }}
-            className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
-              selectedClass === "all"
+            className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${selectedClass === "all"
                 ? "bg-neutral-900 text-white shadow-xs"
                 : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60"
-            }`}
+              }`}
           >
             All Classes
           </button>
@@ -136,11 +135,10 @@ export default function StudentsPage() {
                   setSelectedClass(cls.value);
                   setPage(1);
                 }}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  isSelected
+                className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all ${isSelected
                     ? "bg-neutral-900 text-white shadow-xs"
                     : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60"
-                }`}
+                  }`}
               >
                 {cls.label}
               </button>
@@ -297,7 +295,7 @@ export default function StudentsPage() {
                     </TableCell>
 
                     <TableCell>
-                      <span className="text-xs text-neutral-600 font-medium">{student.admission_year}</span>
+                      <span className="text-xs text-neutral-600 font-medium">{student.admission_year ? `${student.admission_year}/${String(student.admission_year + 1).slice(-2)}` : "N/A"}</span>
                     </TableCell>
 
                     <TableCell>
@@ -316,8 +314,8 @@ export default function StudentsPage() {
                           student.status === "Active"
                             ? "default"
                             : student.status === "Graduated"
-                            ? "secondary"
-                            : "destructive"
+                              ? "secondary"
+                              : "destructive"
                         }
                         className="text-[10px] px-2 py-0"
                       >
