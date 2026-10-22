@@ -53,10 +53,6 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Photo size must be less than 5MB");
-        return;
-      }
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
     }
@@ -111,7 +107,11 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
       onClose();
     } catch (err: any) {
       console.error(err);
-      const msg = err.response?.data?.message || "Failed to update student details";
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to update student details";
       toast.update(loadingToast, {
         render: msg,
         type: "error",

@@ -71,10 +71,6 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Photo size must be less than 5MB");
-        return;
-      }
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
     }
@@ -138,7 +134,12 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
       onClose();
     } catch (err: any) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Failed to register student");
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to register student";
+      toast.error(errorMsg);
     } finally {
       setSubmitting(false);
     }

@@ -239,10 +239,12 @@ export default function AlumniFormModal({
       onClose();
     } catch (err: any) {
       console.error(err);
-      toast.error(
+      const errorMsg =
         err.response?.data?.message ||
-          `Failed to ${isEdit ? "update" : "add"} alumni profile`
-      );
+        err.response?.data?.error ||
+        err.message ||
+        `Failed to ${isEdit ? "update" : "add"} alumni profile`;
+      toast.error(errorMsg);
     } finally {
       setSubmitting(false);
     }
