@@ -47,7 +47,7 @@ const menuItems: MenuItem[] = [
       { name: "Examinations", icon: Award, href: "/examinations" },
     ],
   },
-  { name: "Alumni", icon: GraduationCap, href: "/alumni", badge: "Soon" },
+  { name: "Alumni", icon: GraduationCap, href: "/alumni" },
 ];
 
 interface SidebarProps {
