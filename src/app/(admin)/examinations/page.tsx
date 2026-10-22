@@ -85,8 +85,7 @@ export default function ExaminationsPage() {
         [field]: newVal,
       });
       toast.success(
-        `${field === "is_hall_ticket_published" ? "Hall Ticket" : "Result"} publication ${
-          newVal ? "enabled" : "disabled"
+        `${field === "is_hall_ticket_published" ? "Hall Ticket" : "Result"} publication ${newVal ? "enabled" : "disabled"
         }`
       );
       refetch();
@@ -223,10 +222,10 @@ export default function ExaminationsPage() {
                           exam.status === "Open"
                             ? "default"
                             : exam.status === "Completed"
-                            ? "secondary"
-                            : exam.status === "Draft"
-                            ? "outline"
-                            : "destructive"
+                              ? "secondary"
+                              : exam.status === "Draft"
+                                ? "outline"
+                                : "destructive"
                         }
                         className="text-[10px] px-1.5 py-0"
                       >
@@ -296,9 +295,9 @@ export default function ExaminationsPage() {
                         className="text-neutral-800 hover:text-black cursor-pointer"
                       >
                         {exam.is_hall_ticket_published ? (
-                          <ToggleRight size={22} className="text-neutral-900" />
+                          <ToggleRight size={24} className="text-[#069116]" />
                         ) : (
-                          <ToggleLeft size={22} className="text-neutral-400" />
+                          <ToggleLeft size={24} className="text-neutral-400" />
                         )}
                       </button>
                     </div>
@@ -315,9 +314,9 @@ export default function ExaminationsPage() {
                         className="text-neutral-800 hover:text-black cursor-pointer"
                       >
                         {exam.is_result_published ? (
-                          <ToggleRight size={22} className="text-neutral-900" />
+                          <ToggleRight size={24} className="text-[#069116]" />
                         ) : (
-                          <ToggleLeft size={22} className="text-neutral-400" />
+                          <ToggleLeft size={24} className="text-neutral-400" />
                         )}
                       </button>
                     </div>
