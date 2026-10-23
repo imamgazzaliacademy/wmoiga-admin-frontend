@@ -55,12 +55,12 @@ const menuItems: MenuItem[] = [
     ],
   },
   { name: "Alumni", icon: GraduationCap, href: "/alumni", permission: "view_alumni_manage" },
-  {
-    name: "Admin Management",
-    icon: ShieldCheck,
-    href: "/admins",
-    superAdminOnly: true,
-  },
+  // {
+  //   name: "Admin Management",
+  //   icon: ShieldCheck,
+  //   href: "/admins",
+  //   superAdminOnly: true,
+  // },
 ];
 
 interface SidebarProps {
@@ -163,10 +163,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       aria-expanded={isExpanded}
                       className={`
                         w-full relative flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-all duration-200 group text-sm
-                        ${
-                          isChildActive && !isExpanded
-                            ? "bg-primary/10 text-primary font-semibold"
-                            : isChildActive
+                        ${isChildActive && !isExpanded
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : isChildActive
                             ? "text-primary font-semibold hover:bg-secondary"
                             : "text-gray-600 hover:bg-secondary hover:text-primary font-medium"
                         }
@@ -185,21 +184,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       </div>
                       <ChevronDown
                         size={16}
-                        className={`transition-transform duration-200 ${
-                          isExpanded
+                        className={`transition-transform duration-200 ${isExpanded
                             ? "rotate-180 text-primary"
                             : "text-gray-400 group-hover:text-primary"
-                        }`}
+                          }`}
                       />
                     </button>
 
                     {/* Submenu items */}
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isExpanded
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded
                           ? "max-h-48 opacity-100"
                           : "max-h-0 opacity-0 pointer-events-none"
-                      }`}
+                        }`}
                     >
                       <div className="pl-3.5 ml-4 border-l-2 border-gray-100 space-y-1 py-1">
                         {item.children.map((child) => {
@@ -213,10 +210,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                               onClick={onClose}
                               className={`
                                 relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 group text-sm
-                                ${
-                                  isSubActive
-                                    ? "bg-primary text-white shadow-md shadow-primary/25 font-semibold"
-                                    : "text-gray-600 hover:bg-secondary hover:text-primary font-medium"
+                                ${isSubActive
+                                  ? "bg-primary text-white shadow-md shadow-primary/25 font-semibold"
+                                  : "text-gray-600 hover:bg-secondary hover:text-primary font-medium"
                                 }
                               `}
                             >
@@ -233,10 +229,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                               {child.badge && (
                                 <span
                                   className={`ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded
-                                    ${
-                                      isSubActive
-                                        ? "bg-white/20 text-white"
-                                        : "bg-gray-100 text-gray-500"
+                                    ${isSubActive
+                                      ? "bg-white/20 text-white"
+                                      : "bg-gray-100 text-gray-500"
                                     }
                                   `}
                                 >
@@ -262,10 +257,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={onClose}
                   className={`
                     relative flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200 group text-sm
-                    ${
-                      isActive
-                        ? "bg-primary text-white shadow-lg shadow-primary/25"
-                        : "text-gray-600 hover:bg-secondary hover:text-primary"
+                    ${isActive
+                      ? "bg-primary text-white shadow-lg shadow-primary/25"
+                      : "text-gray-600 hover:bg-secondary hover:text-primary"
                     }
                   `}
                 >
@@ -282,10 +276,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {item.badge && (
                     <span
                       className={`ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded
-                        ${
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-500"
+                        ${isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-500"
                         }
                       `}
                     >
