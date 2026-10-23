@@ -16,6 +16,7 @@ import {
   User,
   School,
   ChevronDown,
+  UserCheck,
 } from "lucide-react";
 
 interface SubMenuItem {
@@ -39,6 +40,7 @@ const menuItems: MenuItem[] = [
   { name: "Important Dates", icon: CalendarDays, href: "/important-dates" },
   { name: "Announcement", icon: Megaphone, href: "/announcement" },
   { name: "Students", icon: Users, href: "/students" },
+  { name: "Staff / Faculty", icon: UserCheck, href: "/staff" },
   {
     name: "Academics",
     icon: School,
