@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 import { StoreProvider } from "@/store/StoreProvider";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({
   children,
@@ -24,9 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased bg-secondary/30 min-h-screen`}>
-        <StoreProvider>
-          {children}
-        </StoreProvider>
+        <AuthProvider>
+          <StoreProvider>
+            {children}
+          </StoreProvider>
+        </AuthProvider>
         <ToastContainer position="top-right" autoClose={3000} />
       </body>
     </html>

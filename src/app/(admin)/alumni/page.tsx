@@ -37,8 +37,11 @@ import apiClient from "@/services/api";
 import { toast } from "react-toastify";
 import AlumniFormModal, { POSITION_OPTIONS } from "@/components/alumni/AlumniFormModal";
 import AlumniDetailsModal from "@/components/alumni/AlumniDetailsModal";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AlumniPage() {
+  const { hasPermission } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedBatch, setSelectedBatch] = useState<string>("all");
@@ -126,6 +129,7 @@ export default function AlumniPage() {
   };
 
   return (
+    <PermissionGuard permission="view_alumni_manage">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -151,13 +155,15 @@ export default function AlumniPage() {
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
-          <button
-            onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-all shadow-md shadow-primary/20 text-sm font-semibold cursor-pointer"
-          >
-            <Plus size={18} />
-            <span>Add Alumni</span>
-          </button>
+          {hasPermission("add_update_alumni") && (
+            <button
+              onClick={() => setIsAddOpen(true)}
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-all shadow-md shadow-primary/20 text-sm font-semibold cursor-pointer"
+            >
+              <Plus size={18} />
+              <span>Add Alumni</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -361,10 +367,16 @@ export default function AlumniPage() {
                         <TableCell className="py-3 text-center">
                           <button
                             type="button"
-                            disabled={isTogglingThis}
+                            disabled={!hasPermission("add_update_alumni") || isTogglingThis}
                             onClick={() => handleToggleFeatured(alumnus)}
-                            className="inline-flex items-center gap-1 cursor-pointer transition-transform active:scale-95 disabled:opacity-50"
-                            title={isFeatured ? "Remove from Featured" : "Add to Featured"}
+                            className="inline-flex items-center gap-1 cursor-pointer transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                              !hasPermission("add_update_alumni")
+                                ? "No permission to update featured status"
+                                : isFeatured
+                                ? "Remove from Featured"
+                                : "Add to Featured"
+                            }
                           >
                             {isTogglingThis ? (
                               <Loader2 size={20} className="animate-spin text-neutral-400" />
@@ -386,20 +398,24 @@ export default function AlumniPage() {
                             >
                               <Eye size={16} />
                             </button>
-                            <button
-                              onClick={() => setEditingAlumnus(alumnus)}
-                              className="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
-                              title="Edit Alumni"
-                            >
-                              <Pencil size={16} />
-                            </button>
-                            <button
-                              onClick={() => setDeletingAlumnus(alumnus)}
-                              className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
-                              title="Delete Alumni"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            {hasPermission("add_update_alumni") && (
+                              <button
+                                onClick={() => setEditingAlumnus(alumnus)}
+                                className="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Alumni"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                            )}
+                            {hasPermission("delete_alumni") && (
+                              <button
+                                onClick={() => setDeletingAlumnus(alumnus)}
+                                className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Alumni"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -529,5 +545,6 @@ export default function AlumniPage() {
         </div>
       )}
     </div>
+    </PermissionGuard>
   );
 }

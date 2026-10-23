@@ -29,8 +29,15 @@ import SubjectConfigModal from "@/components/examinations/SubjectConfigModal";
 import EligibilityManagementModal from "@/components/examinations/EligibilityManagementModal";
 import MarksEntryModal from "@/components/examinations/MarksEntryModal";
 import ClassMarkListModal from "@/components/examinations/ClassMarkListModal";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ExaminationsPage() {
+  const { hasPermission } = useAuth();
+  const canManage = hasPermission("manage_examinations");
+  const canManageResults = hasPermission("manage_results") || canManage;
+  const canViewResults = hasPermission("view_results") || canManageResults || hasPermission("view_examinations");
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
@@ -60,7 +67,7 @@ export default function ExaminationsPage() {
   });
 
   const handleDeleteConfirm = async () => {
-    if (!deletingExam) return;
+    if (!deletingExam || !canManage) return;
     setIsDeleting(true);
     try {
       await apiClient.delete(`/examinations/${deletingExam.id}`);
@@ -79,6 +86,7 @@ export default function ExaminationsPage() {
     exam: any,
     field: "is_hall_ticket_published" | "is_result_published"
   ) => {
+    if (!canManage) return;
     const newVal = !exam[field];
     try {
       await apiClient.put(`/examinations/${exam.id}`, {
@@ -95,30 +103,34 @@ export default function ExaminationsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header - Standard Black and White */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
-            <Award className="text-neutral-900" size={24} />
-            Examination Management System
-          </h1>
-          <p className="text-xs text-neutral-500">
-            Create unified examination cycles, configure class-wise subjects, manage clearance, record marks, and publish results.
-          </p>
+    <PermissionGuard permission="view_examinations">
+      <div className="space-y-6">
+        {/* Header - Standard Black and White */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
+              <Award className="text-neutral-900" size={24} />
+              Examination Management System
+            </h1>
+            <p className="text-xs text-neutral-500">
+              Create unified examination cycles, configure class-wise subjects, manage clearance, record marks, and publish results.
+            </p>
+          </div>
+
+          {canManage && (
+            <button
+              onClick={() => {
+                setEditingExam(null);
+                setIsCreateOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors shrink-0 shadow-xs"
+            >
+              <Plus size={16} />
+              <span>New Examination Cycle</span>
+            </button>
+          )}
         </div>
 
-        <button
-          onClick={() => {
-            setEditingExam(null);
-            setIsCreateOpen(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors shrink-0 shadow-xs"
-        >
-          <Plus size={16} />
-          <span>New Examination Cycle</span>
-        </button>
-      </div>
 
       {/* Filter Bar */}
       <Card className="bg-white border border-neutral-200 shadow-none">
@@ -246,25 +258,27 @@ export default function ExaminationsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => {
-                        setEditingExam(exam);
-                        setIsCreateOpen(true);
-                      }}
-                      title="Edit Examination Cycle"
-                      className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60 rounded-md transition-colors"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      onClick={() => setDeletingExam(exam)}
-                      title="Delete Examination Cycle"
-                      className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
+                  {canManage && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => {
+                          setEditingExam(exam);
+                          setIsCreateOpen(true);
+                        }}
+                        title="Edit Examination Cycle"
+                        className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60 rounded-md transition-colors"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        onClick={() => setDeletingExam(exam)}
+                        title="Delete Examination Cycle"
+                        className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Details & Publication Toggles */}
@@ -290,16 +304,26 @@ export default function ExaminationsPage() {
                           {exam.is_hall_ticket_published ? "Published" : "Hidden"}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleTogglePublication(exam, "is_hall_ticket_published")}
-                        className="text-neutral-800 hover:text-black cursor-pointer"
-                      >
-                        {exam.is_hall_ticket_published ? (
-                          <ToggleRight size={24} className="text-[#069116]" />
-                        ) : (
-                          <ToggleLeft size={24} className="text-neutral-400" />
-                        )}
-                      </button>
+                      {canManage ? (
+                        <button
+                          onClick={() => handleTogglePublication(exam, "is_hall_ticket_published")}
+                          className="text-neutral-800 hover:text-black cursor-pointer"
+                        >
+                          {exam.is_hall_ticket_published ? (
+                            <ToggleRight size={24} className="text-[#069116]" />
+                          ) : (
+                            <ToggleLeft size={24} className="text-neutral-400" />
+                          )}
+                        </button>
+                      ) : (
+                        <span className="text-neutral-400">
+                          {exam.is_hall_ticket_published ? (
+                            <ToggleRight size={24} className="text-[#069116] opacity-60" />
+                          ) : (
+                            <ToggleLeft size={24} className="text-neutral-300" />
+                          )}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between p-2 rounded-md bg-neutral-50 border border-neutral-200">
@@ -309,54 +333,72 @@ export default function ExaminationsPage() {
                           {exam.is_result_published ? "Published" : "Hidden"}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleTogglePublication(exam, "is_result_published")}
-                        className="text-neutral-800 hover:text-black cursor-pointer"
-                      >
-                        {exam.is_result_published ? (
-                          <ToggleRight size={24} className="text-[#069116]" />
-                        ) : (
-                          <ToggleLeft size={24} className="text-neutral-400" />
-                        )}
-                      </button>
+                      {canManage ? (
+                        <button
+                          onClick={() => handleTogglePublication(exam, "is_result_published")}
+                          className="text-neutral-800 hover:text-black cursor-pointer"
+                        >
+                          {exam.is_result_published ? (
+                            <ToggleRight size={24} className="text-[#069116]" />
+                          ) : (
+                            <ToggleLeft size={24} className="text-neutral-400" />
+                          )}
+                        </button>
+                      ) : (
+                        <span className="text-neutral-400">
+                          {exam.is_result_published ? (
+                            <ToggleRight size={24} className="text-[#069116] opacity-60" />
+                          ) : (
+                            <ToggleLeft size={24} className="text-neutral-300" />
+                          )}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons - Clean Neutral Buttons */}
-              <div className="p-3 bg-neutral-50/50 border-t border-neutral-200 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button
-                  onClick={() => setSubjectConfigExam(exam)}
-                  className="px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-800 bg-white border border-neutral-300 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 shadow-none"
-                >
-                  <BookOpen size={13} />
-                  <span>Subjects</span>
-                </button>
+              <div className="p-3 bg-neutral-50/50 border-t border-neutral-200 flex flex-wrap gap-2">
+                {canManage && (
+                  <button
+                    onClick={() => setSubjectConfigExam(exam)}
+                    className="flex-1 min-w-[70px] px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-800 bg-white border border-neutral-300 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 shadow-none"
+                  >
+                    <BookOpen size={13} />
+                    <span>Subjects</span>
+                  </button>
+                )}
 
-                <button
-                  onClick={() => setEligibilityExam(exam)}
-                  className="px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-800 bg-white border border-neutral-300 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 shadow-none"
-                >
-                  <Users size={13} />
-                  <span>Eligibility</span>
-                </button>
+                {canManage && (
+                  <button
+                    onClick={() => setEligibilityExam(exam)}
+                    className="flex-1 min-w-[70px] px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-800 bg-white border border-neutral-300 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 shadow-none"
+                  >
+                    <Users size={13} />
+                    <span>Eligibility</span>
+                  </button>
+                )}
 
-                <button
-                  onClick={() => setMarksEntryExam(exam)}
-                  className="px-2.5 py-1.5 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors flex items-center justify-center gap-1.5 shadow-none"
-                >
-                  <Award size={13} />
-                  <span>Marks</span>
-                </button>
+                {canManageResults && (
+                  <button
+                    onClick={() => setMarksEntryExam(exam)}
+                    className="flex-1 min-w-[70px] px-2.5 py-1.5 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors flex items-center justify-center gap-1.5 shadow-none"
+                  >
+                    <Award size={13} />
+                    <span>Marks</span>
+                  </button>
+                )}
 
-                <button
-                  onClick={() => setClassListExam(exam)}
-                  className="px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-800 bg-white border border-neutral-300 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 shadow-none"
-                >
-                  <FileSpreadsheet size={13} />
-                  <span>Results</span>
-                </button>
+                {canViewResults && (
+                  <button
+                    onClick={() => setClassListExam(exam)}
+                    className="flex-1 min-w-[70px] px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-800 bg-white border border-neutral-300 hover:bg-neutral-100 transition-colors flex items-center justify-center gap-1.5 shadow-none"
+                  >
+                    <FileSpreadsheet size={13} />
+                    <span>Results</span>
+                  </button>
+                )}
               </div>
             </Card>
           ))}
@@ -433,6 +475,8 @@ export default function ExaminationsPage() {
         examinationName={classListExam?.name || ""}
         onClose={() => setClassListExam(null)}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }
+

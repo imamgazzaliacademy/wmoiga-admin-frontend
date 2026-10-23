@@ -41,8 +41,11 @@ import { toast } from "react-toastify";
 import StaffFormModal, { DEPARTMENT_OPTIONS } from "@/components/staff/StaffFormModal";
 import StaffDetailsModal from "@/components/staff/StaffDetailsModal";
 import StaffDeleteModal from "@/components/staff/StaffDeleteModal";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StaffPage() {
+  const { hasPermission } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
@@ -151,6 +154,7 @@ export default function StaffPage() {
   };
 
   return (
+    <PermissionGuard permission="view_staff_manage">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -164,16 +168,18 @@ export default function StaffPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setEditingStaff(null);
-            setIsAddOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 bg-neutral-900 text-white px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all font-semibold text-xs shadow-xs shrink-0"
-        >
-          <Plus size={16} />
-          <span>Add Staff Member</span>
-        </button>
+        {hasPermission("add_update_staff") && (
+          <button
+            onClick={() => {
+              setEditingStaff(null);
+              setIsAddOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 bg-neutral-900 text-white px-4 py-2.5 rounded-xl hover:bg-neutral-800 transition-all font-semibold text-xs shadow-xs shrink-0"
+          >
+            <Plus size={16} />
+            <span>Add Staff Member</span>
+          </button>
+        )}
       </div>
 
       {/* Summary Statistics Cards */}
@@ -521,25 +527,29 @@ export default function StaffPage() {
                           >
                             <Eye size={15} />
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingStaff(item);
-                              setIsAddOpen(true);
-                            }}
-                            title="Edit Staff Member"
-                            className="p-1.5 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
-                          >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeletingStaff(item)}
-                            title="Delete Staff Member"
-                            className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          {hasPermission("add_update_staff") && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingStaff(item);
+                                setIsAddOpen(true);
+                              }}
+                              title="Edit Staff Member"
+                              className="p-1.5 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                          )}
+                          {hasPermission("delete_staff") && (
+                            <button
+                              type="button"
+                              onClick={() => setDeletingStaff(item)}
+                              title="Delete Staff Member"
+                              className="p-1.5 text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -615,5 +625,6 @@ export default function StaffPage() {
         isDeleting={isDeleting}
       />
     </div>
+    </PermissionGuard>
   );
 }

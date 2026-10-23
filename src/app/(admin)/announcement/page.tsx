@@ -20,6 +20,8 @@ import { useFetch } from "@/hooks/useFetch";
 import apiClient from "@/services/api";
 import { toast } from "react-toastify";
 import { Skeleton } from "@/components/ui/skeleton";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 export type AnnouncementCategory = "Public" | "Student Portal" | "Teachers";
 
@@ -43,6 +45,7 @@ const CATEGORIES: { label: string; value: AnnouncementCategory; badgeColor: stri
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export default function AnnouncementPage() {
+    const { hasPermission } = useAuth();
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("All");
     const { data, loading, refetch } = useFetch<Announcement[]>("/get_announcement");
 
@@ -219,6 +222,7 @@ export default function AnnouncementPage() {
     };
 
     return (
+        <PermissionGuard permission="view_announcements">
         <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -228,13 +232,15 @@ export default function AnnouncementPage() {
                         Create, publish, and target announcements for Public, Student Portal, or Teachers.
                     </p>
                 </div>
-                <button
-                    onClick={handleCreateNew}
-                    className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors font-medium shadow-sm shrink-0"
-                >
-                    <Plus size={18} />
-                    New Announcement
-                </button>
+                {hasPermission("add_update_announcements") && (
+                    <button
+                        onClick={handleCreateNew}
+                        className="flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors font-medium shadow-sm shrink-0"
+                    >
+                        <Plus size={18} />
+                        New Announcement
+                    </button>
+                )}
             </div>
 
             {/* Category Filter Tabs */}
@@ -325,20 +331,24 @@ export default function AnnouncementPage() {
                                         </div>
 
                                         <div className="flex items-center gap-1 shrink-0">
-                                            <button
-                                                onClick={() => handleEdit(item)}
-                                                className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
-                                                title="Edit Announcement"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                                                title="Delete Announcement"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {hasPermission("add_update_announcements") && (
+                                                <button
+                                                    onClick={() => handleEdit(item)}
+                                                    className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+                                                    title="Edit Announcement"
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                            )}
+                                            {hasPermission("delete_announcements") && (
+                                                <button
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                                    title="Delete Announcement"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -605,5 +615,6 @@ export default function AnnouncementPage() {
                 )}
             </div>
         </div>
+        </PermissionGuard>
     );
 }

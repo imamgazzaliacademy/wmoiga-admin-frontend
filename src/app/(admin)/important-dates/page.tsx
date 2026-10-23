@@ -8,6 +8,8 @@ import apiClient from "@/services/api";
 import { toast } from "react-toastify";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 type ImportantDate = {
     id?: number;
@@ -17,6 +19,9 @@ type ImportantDate = {
 };
 
 export default function ImportantDatesPage() {
+    const { hasPermission } = useAuth();
+    const canManage = hasPermission("manage_important_dates");
+
     const { data, loading, refetch } = useFetch<ImportantDate[]>('/get_important_dates');
 
     // Editor state
@@ -25,11 +30,13 @@ export default function ImportantDatesPage() {
     const [saving, setSaving] = useState(false);
 
     const handleEdit = (item: ImportantDate) => {
+        if (!canManage) return;
         setFormData({ id: item.id, event_name: item.event_name, event_date: item.event_date, status: item.status });
         setIsEditing(true);
     };
 
     const handlePost = async () => {
+        if (!canManage) return;
         if (!formData.event_name || !formData.event_date) {
             toast.error("Please fill in required fields.");
             return;
@@ -63,23 +70,27 @@ export default function ImportantDatesPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground">Important Dates</h1>
-                    <p className="text-gray-500">Manage admission timelines and important events.</p>
+        <PermissionGuard permission="view_important_dates">
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Important Dates</h1>
+                        <p className="text-gray-500">Manage admission timelines and important events.</p>
+                    </div>
+                    {canManage && (
+                        <button
+                            onClick={() => {
+                                setFormData({ event_name: '', event_date: '', status: 'upcoming' });
+                                setIsEditing(true);
+                            }}
+                            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
+                        >
+                            <Plus size={18} />
+                            Add Date
+                        </button>
+                    )}
                 </div>
-                <button
-                    onClick={() => {
-                        setFormData({ event_name: '', event_date: '', status: 'upcoming' });
-                        setIsEditing(true);
-                    }}
-                    className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
-                >
-                    <Plus size={18} />
-                    Add Date
-                </button>
-            </div>
+
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* Editor Modal/Card */}
@@ -177,15 +188,17 @@ export default function ImportantDatesPage() {
                                             </div>
                                         </div>
 
-                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                            <button
-                                                onClick={() => handleEdit(item)}
-                                                className="p-1.5 text-gray-500 hover:text-primary bg-white rounded-md shadow-sm border mt-[32px]"
-                                                title="Edit Date"
-                                            >
-                                                <Edit size={14} />
-                                            </button>
-                                        </div>
+                                        {canManage && (
+                                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(item)}
+                                                    className="p-1.5 text-gray-500 hover:text-primary bg-white rounded-md shadow-sm border mt-[32px]"
+                                                    title="Edit Date"
+                                                >
+                                                    <Edit size={14} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))}
@@ -198,6 +211,8 @@ export default function ImportantDatesPage() {
                     )}
                 </div>
             </div>
-        </div>
+            </div>
+        </PermissionGuard>
     );
 }
+

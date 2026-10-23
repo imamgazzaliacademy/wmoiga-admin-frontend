@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IoClose } from "react-icons/io5";
 
+import { useAuth } from "@/context/AuthContext";
+
 interface HeaderProps {
   onMenuClick: () => void;
   isOpen: boolean
@@ -12,11 +14,13 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick, isOpen }: HeaderProps) {
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    router.push("/login");
+    logout();
   };
+
+  const isSuperAdmin = user?.role === 'super_admin';
 
   return (
     <header className="h-16 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 bg-white border-b border-border flex items-center justify-between shadow-sm">
@@ -38,21 +42,26 @@ export default function Header({ onMenuClick, isOpen }: HeaderProps) {
 
         {/* Desktop User Profile - Hidden on small screens */}
         <div className="hidden lg:flex items-center gap-4">
-          <button className="p-2 text-gray-500 hover:text-primary transition-colors relative">
-            <Bell size={20} />
-          </button>
-
-          <div className="h-8 w-px bg-gray-200 mx-1"></div>
-
           <div className="flex items-center gap-3 pl-2">
             <div className="text-right">
               <p className="text-sm font-semibold text-foreground">
-                Admin User
+                {user?.name || "Admin"}
               </p>
-              <p className="text-xs text-gray-500">Administrator</p>
+              <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                <span
+                  className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                    isSuperAdmin
+                      ? "bg-purple-100 text-purple-700 border border-purple-200"
+                      : "bg-blue-100 text-blue-700 border border-blue-200"
+                  }`}
+                >
+                  {isSuperAdmin ? "Super Admin" : "Admin"}
+                </span>
+                <span className="text-xs text-gray-400">@{user?.username || "admin"}</span>
+              </div>
             </div>
-            <div className="w-9 h-9 bg-secondary rounded-full flex items-center justify-center border border-gray-200 text-gray-600">
-              <User size={18} />
+            <div className="w-9 h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center border border-primary/20 font-bold text-sm">
+              {user?.name ? user.name.charAt(0).toUpperCase() : <User size={18} />}
             </div>
           </div>
 

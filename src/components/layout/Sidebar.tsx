@@ -17,13 +17,16 @@ import {
   School,
   ChevronDown,
   UserCheck,
+  ShieldCheck,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface SubMenuItem {
   name: string;
   icon: any;
   href: string;
   badge?: string;
+  permission?: string;
 }
 
 interface MenuItem {
@@ -31,25 +34,33 @@ interface MenuItem {
   icon: any;
   href?: string;
   badge?: string;
+  permission?: string;
+  superAdminOnly?: boolean;
   children?: SubMenuItem[];
 }
 
 const menuItems: MenuItem[] = [
-  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { name: "Admission", icon: FileText, href: "/admission" },
-  { name: "Important Dates", icon: CalendarDays, href: "/important-dates" },
-  { name: "Announcement", icon: Megaphone, href: "/announcement" },
-  { name: "Students", icon: Users, href: "/students" },
-  { name: "Staff / Faculty", icon: UserCheck, href: "/staff" },
+  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard", permission: "view_dashboard" },
+  { name: "Admission", icon: FileText, href: "/admission", permission: "view_admissions" },
+  { name: "Important Dates", icon: CalendarDays, href: "/important-dates", permission: "view_important_dates" },
+  { name: "Announcement", icon: Megaphone, href: "/announcement", permission: "view_announcements" },
+  { name: "Students", icon: Users, href: "/students", permission: "view_students_manage" },
+  { name: "Staff / Faculty", icon: UserCheck, href: "/staff", permission: "view_staff_manage" },
   {
     name: "Academics",
     icon: School,
     children: [
-      { name: "Subjects", icon: BookOpen, href: "/subjects" },
-      { name: "Examinations", icon: Award, href: "/examinations" },
+      { name: "Subjects", icon: BookOpen, href: "/subjects", permission: "view_subjects" },
+      { name: "Examinations", icon: Award, href: "/examinations", permission: "view_examinations" },
     ],
   },
-  { name: "Alumni", icon: GraduationCap, href: "/alumni" },
+  { name: "Alumni", icon: GraduationCap, href: "/alumni", permission: "view_alumni_manage" },
+  {
+    name: "Admin Management",
+    icon: ShieldCheck,
+    href: "/admins",
+    superAdminOnly: true,
+  },
 ];
 
 interface SidebarProps {
@@ -60,6 +71,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isSuperAdmin, hasPermission, logout } = useAuth();
 
   // Track expanded state for menu groups with submenus
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {
@@ -83,9 +95,34 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    router.push("/login");
+    logout();
   };
+
+  // Filter menu items by user role and permissions
+  const authorizedMenuItems = menuItems
+    .map((item) => {
+      // Super admin section
+      if (item.superAdminOnly) {
+        return isSuperAdmin ? item : null;
+      }
+
+      // Group with children
+      if (item.children) {
+        const allowedChildren = item.children.filter(
+          (child) => !child.permission || hasPermission(child.permission)
+        );
+        if (allowedChildren.length === 0) return null;
+        return { ...item, children: allowedChildren };
+      }
+
+      // Single item
+      if (item.permission && !hasPermission(item.permission)) {
+        return null;
+      }
+
+      return item;
+    })
+    .filter((item): item is MenuItem => item !== null);
 
   return (
     <>
@@ -108,7 +145,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="h-full bg-white lg:rounded-2xl lg:border border-border flex flex-col p-4 shadow-2xl lg:shadow-xl overflow-hidden">
           <nav className="space-y-1.5 flex-1 overflow-y-auto pr-1 scrollbar-thin">
-            {menuItems.map((item) => {
+            {authorizedMenuItems.map((item) => {
               const Icon = item.icon;
 
               // Check if item has children (submenu)
@@ -263,12 +300,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Mobile Profile & Logout */}
           <div className="lg:hidden pt-3 mt-auto border-t border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-gray-700">
-                <User size={16} />
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                {user?.name ? user.name.charAt(0).toUpperCase() : <User size={16} />}
               </div>
               <div className="text-left text-xs">
-                <p className="font-semibold text-gray-900 leading-tight">Admin User</p>
-                <p className="text-[10px] text-gray-400">Administrator</p>
+                <p className="font-semibold text-gray-900 leading-tight">{user?.name || "Admin"}</p>
+                <p className="text-[10px] text-gray-400 capitalize">
+                  {user?.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                </p>
               </div>
             </div>
             <button

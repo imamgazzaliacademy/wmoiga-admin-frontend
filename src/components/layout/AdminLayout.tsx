@@ -4,43 +4,28 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const router = useRouter();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const { loading, isAuthenticated } = useAuth();
 
     useEffect(() => {
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
+        if (!loading && !isAuthenticated) {
             router.replace('/login');
-            return;
         }
+    }, [loading, isAuthenticated, router]);
 
-        // Verify token with backend
-        fetch('/api/verify_token', {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-            .then((res) => {
-                if (res.status === 401) {
-                    localStorage.removeItem('adminToken');
-                    sessionStorage.setItem('session_expired_msg', 'Your session has expired. Please log in again.');
-                    router.replace('/login');
-                } else if (res.ok) {
-                    setIsAuthenticated(true);
-                } else {
-                    // For non-auth errors (like network/server hiccup), don't immediately kick user out
-                    setIsAuthenticated(true);
-                }
-            })
-            .catch(() => {
-                // If network is offline, preserve local state
-                setIsAuthenticated(true);
-            });
-    }, [router]);
-
-    if (!isAuthenticated) {
-        return <div className="min-h-screen bg-secondary flex items-center justify-center">Loading...</div>;
+    if (loading || !isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-secondary flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm font-medium text-gray-600">Verifying session...</p>
+                </div>
+            </div>
+        );
     }
 
     return (

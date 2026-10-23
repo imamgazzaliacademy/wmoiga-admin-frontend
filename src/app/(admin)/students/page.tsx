@@ -32,9 +32,12 @@ import { adminApi } from "@/store/api/adminApi";
 import StudentRegistrationModal, { SUPPORTED_CLASSES } from "@/components/students/StudentRegistrationModal";
 import StudentEditModal from "@/components/students/StudentEditModal";
 import StudentProfileModal from "@/components/students/StudentProfileModal";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function StudentsPage() {
   const dispatch = useDispatch();
+  const { hasPermission } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedYear, setSelectedYear] = useState<string>("");
@@ -85,6 +88,7 @@ export default function StudentsPage() {
   };
 
   return (
+    <PermissionGuard permission="view_students_manage">
     <div className="space-y-6">
       {/* Header - Standard Black and White */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -98,13 +102,15 @@ export default function StudentsPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors shrink-0 shadow-xs"
-        >
-          <Plus size={16} />
-          <span>Register New Student</span>
-        </button>
+        {hasPermission("add_update_student") && (
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors shrink-0 shadow-xs"
+          >
+            <Plus size={16} />
+            <span>Register New Student</span>
+          </button>
+        )}
       </div>
 
       {/* Class Selection Navigation Buttons / Tabs */}
@@ -333,21 +339,25 @@ export default function StudentsPage() {
                           <Eye size={15} />
                         </button>
 
-                        <button
-                          onClick={() => setEditingStudent(student)}
-                          title="Edit Student"
-                          className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors"
-                        >
-                          <Pencil size={15} />
-                        </button>
+                        {hasPermission("add_update_student") && (
+                          <button
+                            onClick={() => setEditingStudent(student)}
+                            title="Edit Student"
+                            className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                        )}
 
-                        <button
-                          onClick={() => setDeletingStudent(student)}
-                          title="Delete Student"
-                          className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        {hasPermission("delete_student") && (
+                          <button
+                            onClick={() => setDeletingStudent(student)}
+                            title="Delete Student"
+                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -435,5 +445,6 @@ export default function StudentsPage() {
         onClose={() => setViewingStudentId(null)}
       />
     </div>
+    </PermissionGuard>
   );
 }

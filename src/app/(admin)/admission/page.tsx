@@ -18,6 +18,8 @@ import { toast } from "react-toastify";
 import apiClient from "@/services/api";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { downloadHallTicketAsPDF, generateHallTicketHTML, HallTicketData } from "@/lib/generateHallTicket";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 interface IApplication {
     id: number;
@@ -55,6 +57,7 @@ interface IApplication {
 }
 
 export default function AdmissionPage() {
+    const { hasPermission } = useAuth();
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -176,6 +179,7 @@ export default function AdmissionPage() {
     };
 
     return (
+        <PermissionGuard permission="view_admissions">
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
                 <div>
@@ -183,20 +187,24 @@ export default function AdmissionPage() {
                     <p className="text-gray-500">Manage student applications and hall tickets.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <button
-                        onClick={exportToExcel}
-                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
-                    >
-                        <Download size={18} />
-                        Export
-                    </button>
-                    <Link
-                        href="/admission/new"
-                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
-                    >
-                        <Plus size={18} />
-                        Add Manual Application
-                    </Link>
+                    {hasPermission("manage_admissions") && (
+                        <>
+                            <button
+                                onClick={exportToExcel}
+                                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
+                            >
+                                <Download size={18} />
+                                Export
+                            </button>
+                            <Link
+                                href="/admission/new"
+                                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
+                            >
+                                <Plus size={18} />
+                                Add Manual Application
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -271,13 +279,15 @@ export default function AdmissionPage() {
                                                         <Download size={16} />
                                                         Hall Ticket
                                                     </button>
-                                                    <button
-                                                        onClick={() => deleteApp(app.id)}
-                                                        className="flex items-center gap-1 text-sm text-red-600 hover:text-red-800 transition-colors ml-2"
-                                                        title="Delete Application"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                                    {hasPermission("delete_admissions") && (
+                                                        <button
+                                                            onClick={() => deleteApp(app.id)}
+                                                            className="flex items-center gap-1 text-sm text-red-600 hover:text-red-800 transition-colors ml-2"
+                                                            title="Delete Application"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -461,5 +471,6 @@ export default function AdmissionPage() {
                 </div>
             )}
         </div>
+        </PermissionGuard>
     );
 }

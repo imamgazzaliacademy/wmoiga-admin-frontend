@@ -28,8 +28,13 @@ import apiClient from "@/services/api";
 import { toast } from "react-toastify";
 import { SUPPORTED_CLASSES } from "@/components/students/StudentRegistrationModal";
 import CreateEditSubjectModal from "@/components/subjects/CreateEditSubjectModal";
+import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SubjectsPage() {
+  const { hasPermission } = useAuth();
+  const canManage = hasPermission("manage_subjects");
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedClass, setSelectedClass] = useState<string>("all");
@@ -69,6 +74,7 @@ export default function SubjectsPage() {
   };
 
   const handleToggleStatus = async (subj: any) => {
+    if (!canManage) return;
     const newStatus = subj.status === "Active" ? "Inactive" : "Active";
     try {
       await apiClient.put(`/subjects/${subj.id}`, { status: newStatus });
@@ -120,30 +126,34 @@ export default function SubjectsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header - Black and White Design System */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
-            <BookOpen className="text-neutral-900" size={24} />
-            Subject Management
-          </h1>
-          <p className="text-xs text-neutral-500">
-            Define global academic subjects, assign eligible classes, and reuse them across examination cycles.
-          </p>
+    <PermissionGuard permission="view_subjects">
+      <div className="space-y-6">
+        {/* Header - Black and White Design System */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
+              <BookOpen className="text-neutral-900" size={24} />
+              Subject Management
+            </h1>
+            <p className="text-xs text-neutral-500">
+              Define global academic subjects, assign eligible classes, and reuse them across examination cycles.
+            </p>
+          </div>
+
+          {canManage && (
+            <button
+              onClick={() => {
+                setEditingSubject(null);
+                setIsModalOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors shrink-0 shadow-xs"
+            >
+              <Plus size={16} />
+              <span>Add New Subject</span>
+            </button>
+          )}
         </div>
 
-        <button
-          onClick={() => {
-            setEditingSubject(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-neutral-900 hover:bg-black transition-colors shrink-0 shadow-xs"
-        >
-          <Plus size={16} />
-          <span>Add New Subject</span>
-        </button>
-      </div>
 
       {/* Class-Wise Navigation Tabs */}
       <div className="space-y-2">
@@ -307,41 +317,54 @@ export default function SubjectsPage() {
                     </TableCell>
 
                     <TableCell>
-                      <button
-                        onClick={() => handleToggleStatus(subj)}
-                        title="Click to toggle status"
-                        className="cursor-pointer"
-                      >
+                      {canManage ? (
+                        <button
+                          onClick={() => handleToggleStatus(subj)}
+                          title="Click to toggle status"
+                          className="cursor-pointer"
+                        >
+                          <Badge
+                            variant={subj.status === "Active" ? "default" : "secondary"}
+                            className="text-[10px] px-2 py-0"
+                          >
+                            {subj.status}
+                          </Badge>
+                        </button>
+                      ) : (
                         <Badge
                           variant={subj.status === "Active" ? "default" : "secondary"}
                           className="text-[10px] px-2 py-0"
                         >
                           {subj.status}
                         </Badge>
-                      </button>
+                      )}
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => {
-                            setEditingSubject(subj);
-                            setIsModalOpen(true);
-                          }}
-                          title="Edit Subject"
-                          className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors"
-                        >
-                          <Pencil size={15} />
-                        </button>
+                      {canManage ? (
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingSubject(subj);
+                              setIsModalOpen(true);
+                            }}
+                            title="Edit Subject"
+                            className="p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors"
+                          >
+                            <Pencil size={15} />
+                          </button>
 
-                        <button
-                          onClick={() => setDeletingSubject(subj)}
-                          title="Delete Subject"
-                          className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+                          <button
+                            onClick={() => setDeletingSubject(subj)}
+                            title="Delete Subject"
+                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-neutral-400">View only</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -417,6 +440,8 @@ export default function SubjectsPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => refetch()}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }
+

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetDashboardStatsQuery } from "@/store/api/adminApi";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 export default function DashboardPage() {
     const { data: stats, isLoading: loading, isFetching, refetch } = useGetDashboardStatsQuery(undefined, {
@@ -41,8 +42,9 @@ export default function DashboardPage() {
     ];
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <PermissionGuard permission="view_dashboard">
+            <div className="space-y-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
                     <p className="text-gray-500 mt-2">Welcome back, Administrator. Here's what's happening today.</p>
@@ -143,6 +145,7 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+            </div>
+        </PermissionGuard>
     );
 }

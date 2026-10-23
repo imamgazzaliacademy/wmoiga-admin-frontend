@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, User } from "lucide-react";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -40,9 +42,9 @@ export default function LoginPage() {
             const data = await response.json();            
 
             if (data.success && data.token) {
-                // Store the JWT token
-                localStorage.setItem('adminToken', data.token);
-                // Redirect to dashboard
+                // Store token & user in AuthContext
+                login(data.token, data.user);
+                toast.success(`Welcome back, ${data.user?.name || "Admin"}!`);
                 router.push("/dashboard");
             } else {
                 toast.error(data.message || "Invalid credentials");
