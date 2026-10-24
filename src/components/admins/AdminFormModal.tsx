@@ -285,7 +285,7 @@ export default function AdminFormModal({
                                             type="text"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            placeholder="e.g. Dr. Aysha Siddiqua"
+                                            placeholder="e.g. Muhammed"
                                             className={`w-full px-3.5 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 ${
                                                 errors.name ? "border-red-400 bg-red-50/30" : "border-gray-200"
                                             }`}
@@ -302,7 +302,7 @@ export default function AdminFormModal({
                                             type="text"
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                                            placeholder="e.g. aysha.admin"
+                                            placeholder="e.g. muhammed.admin"
                                             className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 ${
                                                 errors.username ? "border-red-400 bg-red-50/30" : "border-gray-200"
                                             }`}

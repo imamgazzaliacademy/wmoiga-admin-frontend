@@ -380,7 +380,7 @@ export default function StaffFormModal({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dr. Abdul Rahman, Prof. Fatima"
+                  placeholder="e.g. Muhammed"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-3 py-2 border rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900"
