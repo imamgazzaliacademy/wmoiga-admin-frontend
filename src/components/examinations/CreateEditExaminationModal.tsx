@@ -186,10 +186,12 @@ export default function CreateEditExaminationModal({
                   onChange={(e) => setAcademicYear(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
                 >
-                  <option value="2025-2026">2025-2026</option>
-                  <option value="2024-2025">2024-2025</option>
+                  {/* <option value="2025-2026">2025-2026</option>
+                  <option value="2024-2025">2024-2025</option> */}
                   <option value="2026-2027">2026-2027</option>
                   <option value="2027-2028">2027-2028</option>
+                  <option value="2027-2028">2028-2029</option>
+                  <option value="2027-2028">2029-2030</option>
                 </select>
               </div>
 
