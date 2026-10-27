@@ -24,10 +24,14 @@ export const SUPPORTED_CLASSES = [
   { value: "D3", label: "D3 (Degree 3rd Yr)" },
 ];
 
+export const ADMISSION_NUMBER_REGEX = /^IGA\d{2}(HS|HSS|DGR)\d{3,}$/i;
+
 export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }: Props) {
   const dispatch = useDispatch();
-  const currentYear = new Date().getFullYear();
-  const [admissionYear, setAdmissionYear] = useState<number>(currentYear);
+  const [admissionYear, setAdmissionYear] = useState<number | "">("");
+  const [className, setClassName] = useState<string>("");
+  const [admissionNumber, setAdmissionNumber] = useState<string>("");
+  const [isManualAdmissionNumber, setIsManualAdmissionNumber] = useState<boolean>(false);
   const [previewNumber, setPreviewNumber] = useState<string>("");
   const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -35,7 +39,6 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
   // Form Fields
   const [fullName, setFullName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [className, setClassName] = useState("8");
   const [fatherName, setFatherName] = useState("");
   const [place, setPlace] = useState("");
   const [guardianContact, setGuardianContact] = useState("");
@@ -44,29 +47,56 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
 
-  // Fetch admission number preview whenever admissionYear changes
+  const isReady = Boolean(admissionYear && className);
+
+  // Fetch admission number preview only when BOTH admissionYear and className are selected
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !admissionYear || !className) {
+      setPreviewNumber("");
+      if (!isManualAdmissionNumber) {
+        setAdmissionNumber("");
+      }
+      setLoadingPreview(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setLoadingPreview(true);
 
     const fetchPreview = async () => {
-      setLoadingPreview(true);
       try {
         const res = await apiClient.get("/students/preview_admission_number", {
-          params: { year: admissionYear },
+          params: { year: admissionYear, class_name: className },
         });
-        if (res.data?.data?.preview) {
-          setPreviewNumber(res.data.data.preview);
+
+        // Ensure stale preview responses do not overwrite the latest selection
+        if (!isCancelled) {
+          const generated = res.data?.data?.preview || "";
+          setPreviewNumber(generated);
+          // If admin has not entered a custom number, show the generated default
+          if (!isManualAdmissionNumber) {
+            setAdmissionNumber(generated);
+          }
         }
       } catch (err: any) {
-        console.error("Failed to fetch preview admission number", err);
-        setPreviewNumber(`IGA...${admissionYear}`);
+        if (!isCancelled) {
+          console.error("Failed to fetch preview admission number", err);
+          setPreviewNumber("");
+        }
       } finally {
-        setLoadingPreview(false);
+        if (!isCancelled) {
+          setLoadingPreview(false);
+        }
       }
     };
 
     fetchPreview();
-  }, [admissionYear, isOpen]);
+
+    return () => {
+      // Cancels in-flight requests on dependency change to prevent race conditions
+      isCancelled = true;
+    };
+  }, [admissionYear, className, isOpen]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -77,9 +107,13 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
   };
 
   const resetForm = () => {
+    setAdmissionYear("");
+    setClassName("");
+    setAdmissionNumber("");
+    setIsManualAdmissionNumber(false);
+    setPreviewNumber("");
     setFullName("");
     setDateOfBirth("");
-    setClassName("8");
     setFatherName("");
     setPlace("");
     setGuardianContact("");
@@ -92,6 +126,14 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!admissionYear) {
+      toast.error("Please select an Admission Year");
+      return;
+    }
+    if (!className) {
+      toast.error("Please select a Class");
+      return;
+    }
     if (!fullName.trim()) {
       toast.error("Full Name is required");
       return;
@@ -100,8 +142,21 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
       toast.error("Date of Birth is required for student authentication");
       return;
     }
-    if (!className) {
-      toast.error("Class selection is required");
+
+    // If no number is entered, use the generated default
+    const finalAdmissionNumber = admissionNumber.trim()
+      ? admissionNumber.trim().toUpperCase()
+      : previewNumber;
+
+    if (!finalAdmissionNumber) {
+      toast.error("Admission number could not be generated. Please select Class and Admission Year.");
+      return;
+    }
+
+    if (!ADMISSION_NUMBER_REGEX.test(finalAdmissionNumber)) {
+      toast.error(
+        "Invalid Admission Number format. Expected format: IGA{YY}{SECTION_CODE}{NNN} (e.g., IGA26HS001, IGA23HSS001, IGA20DGR001)"
+      );
       return;
     }
 
@@ -112,6 +167,7 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
       formData.append("date_of_birth", dateOfBirth);
       formData.append("admission_year", String(admissionYear));
       formData.append("class_name", className);
+      formData.append("admission_number", finalAdmissionNumber);
 
       if (fatherName.trim()) formData.append("father_name", fatherName.trim());
       if (place.trim()) formData.append("place", place.trim());
@@ -127,7 +183,7 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
       dispatch(adminApi.util.invalidateTags([{ type: 'Students', id: 'LIST' }]));
 
       toast.success(
-        `Student registered! Assigned Admission Number: ${res.data?.data?.admission_number}`
+        `Student registered! Assigned Admission Number: ${res.data?.data?.admission_number || finalAdmissionNumber}`
       );
       resetForm();
       onSuccess();
@@ -155,7 +211,7 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
           <div className="min-w-0 pr-2">
             <h2 className="text-sm sm:text-base font-bold tracking-tight truncate">Register New Student</h2>
             <p className="text-[11px] sm:text-xs text-neutral-400 truncate">
-              Admission number will be safely allocated via database sequence.
+              Select Class and Year to unlock auto-generated Admission Number (editable).
             </p>
           </div>
           <button
@@ -169,220 +225,268 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0 flex flex-col">
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 flex-1">
-          {/* Section 1: Admission Year & Generated Sequence Preview */}
-          <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                  Admission Year <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={admissionYear}
-                  onChange={(e) => setAdmissionYear(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium text-neutral-900"
-                >
-                  {[2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026].map((yr) => (
-                    <option key={yr} value={yr}>
-                      Academic Year {yr}/{String(yr + 1).slice(-2)}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-neutral-500 mt-1">
-                  Determines the yearly sequence counter.
-                </p>
+            {/* Section 1: Academic Enrollment & Admission Number */}
+            <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                {/* Admission Year Selection */}
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                    Admission Year <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar size={15} className="absolute left-3 top-2.5 text-neutral-400 pointer-events-none" />
+                    <select
+                      value={admissionYear}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : "";
+                        setAdmissionYear(val);
+                      }}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium text-neutral-900"
+                    >
+                      <option value="">-- Select Admission Year --</option>
+                      {[2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019].map((yr) => (
+                        <option key={yr} value={yr}>
+                          Academic Year {yr}/{String(yr + 1).slice(-2)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* <p className="text-[11px] text-neutral-500 mt-1">
+                  Determines academic batch and year prefix (YY).
+                </p> */}
+                </div>
+
+                {/* Class Selection */}
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                    Class <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <BookOpen size={15} className="absolute left-3 top-2.5 text-neutral-400 pointer-events-none" />
+                    <select
+                      value={className}
+                      onChange={(e) => setClassName(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium text-neutral-900"
+                    >
+                      <option value="">-- Select Class --</option>
+                      {SUPPORTED_CLASSES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* <p className="text-[11px] text-neutral-500 mt-1">
+                  Derives section code: HS (8-10), HSS (+1,+2), DGR (D1-D3).
+                </p> */}
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
-                  Preview Admission No
-                </label>
+              {/* Admission Number Field - Disabled until both are selected */}
+              <div className="pt-3 border-t border-neutral-200">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                    Admission Number <span className="text-red-500">*</span>
+                  </label>
+                  {isReady && isManualAdmissionNumber && previewNumber && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdmissionNumber(previewNumber);
+                        setIsManualAdmissionNumber(false);
+                      }}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-medium underline"
+                    >
+                      Reset to Default ({previewNumber})
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <input
                     type="text"
-                    readOnly
-                    value={loadingPreview ? "Generating preview..." : previewNumber}
-                    className="w-full px-3 py-2 text-sm font-mono font-bold bg-neutral-100 border border-neutral-300 rounded-md text-neutral-900 cursor-not-allowed"
+                    disabled={!isReady || loadingPreview}
+                    value={admissionNumber}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase();
+                      setAdmissionNumber(val);
+                      setIsManualAdmissionNumber(true);
+                    }}
+                    placeholder={
+                      !isReady
+                        ? "Select Class and Admission Year first"
+                        : loadingPreview
+                          ? "Generating preview..."
+                          : (previewNumber || "Auto-generated default")
+                    }
+                    className={`w-full px-3 py-2 text-sm font-mono font-bold rounded-md uppercase outline-none transition-colors ${!isReady || loadingPreview
+                        ? "bg-neutral-100 border border-neutral-300 text-neutral-400 cursor-not-allowed"
+                        : "bg-white border border-neutral-300 text-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                      }`}
                   />
-                  {!loadingPreview && (
-                    <span className="absolute right-2.5 top-2.5 text-neutral-400 text-xs">
-                      (read-only)
+                  {isReady && !isManualAdmissionNumber && previewNumber && !loadingPreview && (
+                    <span className="absolute right-2.5 top-2.5 text-neutral-400 text-xs pointer-events-none font-sans font-normal">
+                      (default)
                     </span>
                   )}
                 </div>
                 <p className="text-[11px] text-neutral-500 mt-1">
-                  Number is reserved safely only upon submission.
+                  {!isReady
+                    ? "Select Class and Admission Year above to enable and generate the admission number."
+                    : loadingPreview
+                      ? "Generating admission number preview based on selected class and year..."
+                      : isManualAdmissionNumber
+                        ? `Manual admission number entered (will not be overwritten). Generated default is ${previewNumber}.`
+                        : `Generated default: ${previewNumber}. You can edit manually or leave as default.`}
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* Section 2: Core Required Information */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 border-b pb-1">
-              Required Student Credentials
-            </h3>
+            {/* Section 2: Core Required Information */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 border-b pb-1">
+                Required Student Credentials
+              </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Full Name */}
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <User size={15} className="absolute left-3 top-2.5 text-neutral-400" />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter student full name"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Date of Birth */}
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Date of Birth <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar size={15} className="absolute left-3 top-2.5 text-neutral-400" />
-                  <input
-                    type="date"
-                    required
-                    value={dateOfBirth}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                  />
-                </div>
-                <p className="text-[11px] text-neutral-500 mt-0.5">Used as student login credential</p>
-              </div>
-
-              {/* Class Selection */}
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Class <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <BookOpen size={15} className="absolute left-3 top-2.5 text-neutral-400" />
-                  <select
-                    value={className}
-                    onChange={(e) => setClassName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
-                  >
-                    {SUPPORTED_CLASSES.map((c) => (
-                      <option key={c.value} value={c.value}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Photo Upload */}
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Student Photo <span className="text-neutral-400">(Optional)</span>
-                </label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-neutral-300 rounded-md hover:bg-neutral-50 cursor-pointer transition-colors shrink-0">
-                    <Upload size={14} />
-                    <span>Choose File</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="hidden"
-                    />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Full Name <span className="text-red-500">*</span>
                   </label>
-                  {photoPreview ? (
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-neutral-300 shrink-0">
-                      <img src={photoPreview} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <span className="text-xs text-neutral-400 truncate">No file chosen</span>
-                  )}
+                  <div className="relative">
+                    <User size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Enter student full name"
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Date of Birth <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+                    <input
+                      type="date"
+                      required
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
+                  <p className="text-[11px] text-neutral-500 mt-0.5">Used as student login credential</p>
+                </div>
+
+                {/* Photo Upload */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Student Photo <span className="text-neutral-400">(Optional)</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-neutral-300 rounded-md hover:bg-neutral-50 cursor-pointer transition-colors shrink-0">
+                      <Upload size={14} />
+                      <span>Choose File</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                      />
+                    </label>
+                    {photoPreview ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-neutral-300 shrink-0">
+                        <img src={photoPreview} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <span className="text-xs text-neutral-400 truncate">No file chosen</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Section 3: Optional Guardian & Contact Details */}
-          <div className="space-y-4 pt-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 border-b pb-1">
-              Contact & Guardian Details (Optional)
-            </h3>
+            {/* Section 3: Optional Guardian & Contact Details */}
+            <div className="space-y-4 pt-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 border-b pb-1">
+                Contact & Guardian Details (Optional)
+              </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Father's Name</label>
-                <input
-                  type="text"
-                  value={fatherName}
-                  onChange={(e) => setFatherName(e.target.value)}
-                  placeholder="Father / Guardian Name"
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Place / City</label>
-                <div className="relative">
-                  <MapPin size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Father's Name</label>
                   <input
                     type="text"
-                    value={place}
-                    onChange={(e) => setPlace(e.target.value)}
-                    placeholder="e.g. Panamaram, Wayanad"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    value={fatherName}
+                    onChange={(e) => setFatherName(e.target.value)}
+                    placeholder="Father / Guardian Name"
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Guardian Contact</label>
-                <div className="relative">
-                  <Phone size={15} className="absolute left-3 top-2.5 text-neutral-400" />
-                  <input
-                    type="tel"
-                    value={guardianContact}
-                    onChange={(e) => setGuardianContact(e.target.value)}
-                    placeholder="Primary phone number"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                  />
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Place / City</label>
+                  <div className="relative">
+                    <MapPin size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+                    <input
+                      type="text"
+                      value={place}
+                      onChange={(e) => setPlace(e.target.value)}
+                      placeholder="e.g. Panamaram, Wayanad"
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Alternative Phone</label>
-                <div className="relative">
-                  <Phone size={15} className="absolute left-3 top-2.5 text-neutral-400" />
-                  <input
-                    type="tel"
-                    value={altPhone}
-                    onChange={(e) => setAltPhone(e.target.value)}
-                    placeholder="Secondary contact"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                  />
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Guardian Contact</label>
+                  <div className="relative">
+                    <Phone size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+                    <input
+                      type="tel"
+                      value={guardianContact}
+                      onChange={(e) => setGuardianContact(e.target.value)}
+                      placeholder="Primary phone number"
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Email Address</label>
-                <div className="relative">
-                  <Mail size={15} className="absolute left-3 top-2.5 text-neutral-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="student@gmail.com"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                  />
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Alternative Phone</label>
+                  <div className="relative">
+                    <Phone size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+                    <input
+                      type="tel"
+                      value={altPhone}
+                      onChange={(e) => setAltPhone(e.target.value)}
+                      placeholder="Secondary contact"
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Email Address</label>
+                  <div className="relative">
+                    <Mail size={15} className="absolute left-3 top-2.5 text-neutral-400" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="student@gmail.com"
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           </div>
 
           {/* Action Buttons - Clean Solid Black and White */}

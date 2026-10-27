@@ -6,7 +6,7 @@ import apiClient from "@/services/api";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { adminApi } from "@/store/api/adminApi";
-import { SUPPORTED_CLASSES } from "./StudentRegistrationModal";
+import { SUPPORTED_CLASSES, ADMISSION_NUMBER_REGEX } from "./StudentRegistrationModal";
 
 interface Props {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
   const [submitting, setSubmitting] = useState(false);
 
   // Form Fields
+  const [admissionNumber, setAdmissionNumber] = useState("");
   const [fullName, setFullName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [className, setClassName] = useState("8");
@@ -35,6 +36,7 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
 
   useEffect(() => {
     if (student) {
+      setAdmissionNumber(student.admission_number || "");
       setFullName(student.full_name || "");
       setDateOfBirth(student.date_of_birth || "");
       setClassName(student.class_name || "8");
@@ -62,6 +64,22 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
     e.preventDefault();
     if (!student) return;
 
+    const cleanAdm = admissionNumber.trim().toUpperCase();
+    if (!cleanAdm) {
+      toast.error("Admission Number is required");
+      return;
+    }
+
+    // Only validate new format if the admission number was modified
+    if (cleanAdm !== student.admission_number) {
+      if (!ADMISSION_NUMBER_REGEX.test(cleanAdm)) {
+        toast.error(
+          "Invalid Admission Number format. Expected format: IGA{YY}{SECTION_CODE}{NNN} (e.g., IGA26HS001, IGA23HSS001, IGA20DGR001)"
+        );
+        return;
+      }
+    }
+
     if (!fullName.trim()) {
       toast.error("Full Name is required");
       return;
@@ -76,6 +94,7 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
 
     try {
       const formData = new FormData();
+      formData.append("admission_number", cleanAdm);
       formData.append("full_name", fullName.trim());
       formData.append("date_of_birth", dateOfBirth);
       formData.append("admission_year", String(admissionYear));
@@ -133,7 +152,7 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
           <div className="min-w-0 pr-2">
             <h2 className="text-sm sm:text-base font-bold truncate">Edit Student Details</h2>
             <p className="text-[11px] sm:text-xs text-neutral-400 truncate">
-              Admission Number: <span className="text-white font-mono font-bold bg-neutral-800 px-1.5 py-0.5 rounded">{student.admission_number}</span> (Immutable)
+              Admission Number: <span className="text-white font-mono font-bold bg-neutral-800 px-1.5 py-0.5 rounded">{admissionNumber || student.admission_number}</span>
             </p>
           </div>
           <button
@@ -147,176 +166,180 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto min-h-0 flex flex-col">
           <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-4 sm:space-y-5">
-          {/* Read-only Admission ID & Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-neutral-50 border border-neutral-200">
-            <div>
-              <label className="block text-xs font-semibold text-neutral-600 uppercase tracking-wider mb-1">
-                Admission Number
-              </label>
-              <input
-                type="text"
-                readOnly
-                value={student.admission_number}
-                className="w-full px-3 py-2 text-sm bg-neutral-100 border border-neutral-300 rounded-md text-neutral-900 font-mono font-bold cursor-not-allowed"
-              />
-              <p className="text-[11px] text-neutral-500 mt-1">Admission numbers are permanently locked</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-neutral-600 uppercase tracking-wider mb-1">
-                Account Status
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none font-medium"
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Graduated">Graduated</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 border-b pb-1">
-              Student Details
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Admission Number & Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg bg-neutral-50 border border-neutral-200">
               <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Full Name <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1">
+                  Admission Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  value={admissionNumber}
+                  onChange={(e) => setAdmissionNumber(e.target.value.toUpperCase())}
+                  placeholder="e.g. IGA26HS001"
+                  className="w-full px-3 py-2 text-sm bg-white border border-neutral-300 rounded-md text-neutral-900 font-mono font-bold focus:ring-1 focus:ring-neutral-900 outline-none uppercase"
                 />
+                <p className="text-[11px] text-neutral-500 mt-1">
+                  Format: IGA&#123;YY&#125;&#123;SECTION&#125;&#123;NNN&#125; (e.g., IGA26HS001)
+                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Date of Birth <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Class <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-neutral-600 uppercase tracking-wider mb-1">
+                  Account Status
                 </label>
                 <select
-                  value={className}
-                  onChange={(e) => setClassName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-white border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none font-medium"
                 >
-                  {SUPPORTED_CLASSES.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Graduated">Graduated</option>
                 </select>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Admission Year / Batch
-                </label>
-                <select
-                  value={admissionYear}
-                  onChange={(e) => setAdmissionYear(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
-                >
-                  {[2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026].map((yr) => (
-                    <option key={yr} value={yr}>
-                      Batch {yr}/{String(yr + 1).slice(-2)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 border-b pb-1">
+                Student Details
+              </h3>
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Father's Name</label>
-                <input
-                  type="text"
-                  value={fatherName}
-                  onChange={(e) => setFatherName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Place / City</label>
-                <input
-                  type="text"
-                  value={place}
-                  onChange={(e) => setPlace(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Guardian Contact</label>
-                <input
-                  type="tel"
-                  value={guardianContact}
-                  onChange={(e) => setGuardianContact(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Alternative Phone</label>
-                <input
-                  type="tel"
-                  value={altPhone}
-                  onChange={(e) => setAltPhone(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
-                />
-              </div>
-
-              {/* Photo Update */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-neutral-700 mb-1">Update Photo</label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-neutral-300 rounded-md hover:bg-neutral-50 cursor-pointer transition-colors">
-                    <Upload size={14} />
-                    <span>Choose New Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="hidden"
-                    />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Full Name <span className="text-red-500">*</span>
                   </label>
-                  {photoPreview && (
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-neutral-300">
-                      <img src={photoPreview} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  )}
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Date of Birth <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Class <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={className}
+                    onChange={(e) => setClassName(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
+                  >
+                    {SUPPORTED_CLASSES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    Admission Year / Batch
+                  </label>
+                  <select
+                    value={admissionYear}
+                    onChange={(e) => setAdmissionYear(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none bg-white font-medium"
+                  >
+                    {[2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026].map((yr) => (
+                      <option key={yr} value={yr}>
+                        Batch {yr}/{String(yr + 1).slice(-2)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Father's Name</label>
+                  <input
+                    type="text"
+                    value={fatherName}
+                    onChange={(e) => setFatherName(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Place / City</label>
+                  <input
+                    type="text"
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Guardian Contact</label>
+                  <input
+                    type="tel"
+                    value={guardianContact}
+                    onChange={(e) => setGuardianContact(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Alternative Phone</label>
+                  <input
+                    type="tel"
+                    value={altPhone}
+                    onChange={(e) => setAltPhone(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:ring-1 focus:ring-neutral-900 outline-none"
+                  />
+                </div>
+
+                {/* Photo Update */}
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">Update Photo</label>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-neutral-300 rounded-md hover:bg-neutral-50 cursor-pointer transition-colors">
+                      <Upload size={14} />
+                      <span>Choose New Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                      />
+                    </label>
+                    {photoPreview && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-neutral-300">
+                        <img src={photoPreview} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
           </div>
 

@@ -71,7 +71,10 @@ export const adminApi = createApi({
                     : [{ type: 'Students', id: 'LIST' }],
         }),
 
-        getPreviewAdmissionNumber: builder.query<{ preview: string; year: number }, { year?: number }>({
+        getPreviewAdmissionNumber: builder.query<
+            { preview: string; year: number; class_name?: string; section_code?: string },
+            { year?: number; class_name?: string }
+        >({
             query: (params) => ({
                 url: '/students/preview_admission_number',
                 params,
