@@ -29,8 +29,15 @@ export default function MarksEntryModal({
   const [loading, setLoading] = useState(false);
   const [studentSearch, setStudentSearch] = useState("");
 
-  // Current marks being edited: subject_id -> { marks_obtained, is_absent }
-  const [marksState, setMarksState] = useState<Record<number, { marks_obtained: number; is_absent: boolean }>>({});
+  interface StudentSubjectMarkState {
+    exam_marks_obtained: number;
+    ce_marks_obtained: number;
+    marks_obtained: number;
+    is_absent: boolean;
+  }
+
+  // Current marks being edited: subject_id -> StudentSubjectMarkState
+  const [marksState, setMarksState] = useState<Record<number, StudentSubjectMarkState>>({});
   const [calculatedResult, setCalculatedResult] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -87,11 +94,17 @@ export default function MarksEntryModal({
     const std = students.find((s) => s.id === selectedStudentId);
     if (!std) return;
 
-    const initialMarks: Record<number, { marks_obtained: number; is_absent: boolean }> = {};
+    const initialMarks: Record<number, StudentSubjectMarkState> = {};
     if (std.marks && std.marks.length > 0) {
       std.marks.forEach((m: any) => {
+        const examMarks = m.exam_marks_obtained !== null && m.exam_marks_obtained !== undefined
+          ? Number(m.exam_marks_obtained)
+          : Number(m.marks_obtained);
+        const ceMarks = Number(m.ce_marks_obtained || 0);
         initialMarks[m.subject_id] = {
-          marks_obtained: m.marks_obtained,
+          exam_marks_obtained: examMarks,
+          ce_marks_obtained: ceMarks,
+          marks_obtained: Number(m.marks_obtained),
           is_absent: Boolean(m.is_absent),
         };
       });
@@ -102,38 +115,71 @@ export default function MarksEntryModal({
     setCalculatedResult(existingResult);
   }, [selectedStudentId, students]);
 
-  const handleMarkChange = (subjectId: number, maxMarks: number, val: string) => {
+  const handleExamMarkChange = (subjectId: number, maxMarks: number, isCE: boolean, val: string) => {
     const num = parseFloat(val);
+    const current = marksState[subjectId] || { exam_marks_obtained: 0, ce_marks_obtained: 0, marks_obtained: 0, is_absent: false };
+
     if (isNaN(num)) {
+      const updatedTotal = isCE ? current.ce_marks_obtained : 0;
       setMarksState((prev) => ({
         ...prev,
-        [subjectId]: { marks_obtained: 0, is_absent: prev[subjectId]?.is_absent || false },
+        [subjectId]: { ...current, exam_marks_obtained: 0, marks_obtained: updatedTotal },
       }));
       return;
     }
 
     if (num > maxMarks) {
-      toast.warn(`Marks cannot exceed maximum marks (${maxMarks})`);
+      toast.warn(`Exam marks cannot exceed maximum marks (${maxMarks})`);
       return;
     }
     if (num < 0) {
-      toast.warn("Marks cannot be negative");
+      toast.warn("Exam marks cannot be negative");
       return;
     }
 
+    const updatedTotal = num + (isCE ? current.ce_marks_obtained : 0);
     setMarksState((prev) => ({
       ...prev,
-      [subjectId]: { marks_obtained: num, is_absent: prev[subjectId]?.is_absent || false },
+      [subjectId]: { ...current, exam_marks_obtained: num, marks_obtained: updatedTotal },
+    }));
+  };
+
+  const handleCeMarkChange = (subjectId: number, ceMaxMarks: number, val: string) => {
+    const num = parseFloat(val);
+    const current = marksState[subjectId] || { exam_marks_obtained: 0, ce_marks_obtained: 0, marks_obtained: 0, is_absent: false };
+
+    if (isNaN(num)) {
+      const updatedTotal = current.exam_marks_obtained;
+      setMarksState((prev) => ({
+        ...prev,
+        [subjectId]: { ...current, ce_marks_obtained: 0, marks_obtained: updatedTotal },
+      }));
+      return;
+    }
+
+    if (num > ceMaxMarks) {
+      toast.warn(`CE marks cannot exceed CE maximum marks (${ceMaxMarks})`);
+      return;
+    }
+    if (num < 0) {
+      toast.warn("CE marks cannot be negative");
+      return;
+    }
+
+    const updatedTotal = current.exam_marks_obtained + num;
+    setMarksState((prev) => ({
+      ...prev,
+      [subjectId]: { ...current, ce_marks_obtained: num, marks_obtained: updatedTotal },
     }));
   };
 
   const handleToggleAbsent = (subjectId: number) => {
     setMarksState((prev) => {
-      const current = prev[subjectId] || { marks_obtained: 0, is_absent: false };
+      const current = prev[subjectId] || { exam_marks_obtained: 0, ce_marks_obtained: 0, marks_obtained: 0, is_absent: false };
       return {
         ...prev,
         [subjectId]: {
-          marks_obtained: !current.is_absent ? 0 : current.marks_obtained,
+          ...current,
           is_absent: !current.is_absent,
         },
       };
@@ -145,10 +191,16 @@ export default function MarksEntryModal({
 
     const marksPayload = subjects.map((subj) => {
       const subjKey = subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id);
-      const entry = marksState[subjKey] || { marks_obtained: 0, is_absent: false };
+      const isCE = Number(subj.ce_max_marks || 0) > 0;
+      const entry = marksState[subjKey] || { exam_marks_obtained: 0, ce_marks_obtained: 0, marks_obtained: 0, is_absent: false };
+      const examObt = entry.is_absent ? null : entry.exam_marks_obtained;
+      const ceObt = entry.is_absent ? 0 : (isCE ? entry.ce_marks_obtained : 0);
+      const totalObt = entry.is_absent ? 0 : (entry.exam_marks_obtained + (isCE ? entry.ce_marks_obtained : 0));
       return {
         subject_id: subjKey,
-        marks_obtained: entry.is_absent ? 0 : entry.marks_obtained,
+        exam_marks_obtained: examObt,
+        ce_marks_obtained: ceObt,
+        marks_obtained: totalObt,
         is_absent: entry.is_absent,
       };
     });
@@ -409,22 +461,30 @@ export default function MarksEntryModal({
 
                 {/* Marks Entry Table */}
                 <div className="border border-neutral-200 rounded-lg overflow-x-auto scrollbar-thin">
-                  <table className="w-full min-w-[520px] text-left text-xs whitespace-nowrap">
+                  <table className="w-full min-w-[680px] text-left text-xs whitespace-nowrap">
                     <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold">
                       <tr>
                         <th className="p-2.5">Subject</th>
-                        <th className="p-2.5 w-24">Max Marks</th>
-                        <th className="p-2.5 w-24">Pass Marks</th>
-                        <th className="p-2.5 w-28">Marks Obtained</th>
-                        <th className="p-2.5 w-20 text-center">Absent</th>
+                        <th className="p-2.5 w-24">Exam (Max/Pass)</th>
+                        <th className="p-2.5 w-24">CE (Max/Pass)</th>
+                        <th className="p-2.5 w-24">Exam Obt</th>
+                        <th className="p-2.5 w-24">CE Obt</th>
+                        <th className="p-2.5 w-24 text-center">Total</th>
+                        <th className="p-2.5 w-16 text-center">Absent</th>
                         <th className="p-2.5 w-20 text-center">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-100">
                       {subjects.map((subj) => {
                         const subjKey = subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id);
-                        const entry = marksState[subjKey] || { marks_obtained: 0, is_absent: false };
-                        const isPassed = !entry.is_absent && entry.marks_obtained >= subj.pass_marks;
+                        const isCE = Number(subj.ce_max_marks || 0) > 0;
+                        const entry = marksState[subjKey] || { exam_marks_obtained: 0, ce_marks_obtained: 0, marks_obtained: 0, is_absent: false };
+
+                        const examPassed = entry.exam_marks_obtained >= subj.pass_marks;
+                        const cePassed = !isCE || entry.ce_marks_obtained >= (subj.ce_pass_marks || 0);
+                        const isPassed = !entry.is_absent && examPassed && cePassed;
+                        const totalMax = Number(subj.max_marks) + (isCE ? Number(subj.ce_max_marks || 0) : 0);
+                        const currentTotal = entry.is_absent ? 0 : (entry.exam_marks_obtained + (isCE ? entry.ce_marks_obtained : 0));
 
                         return (
                           <tr key={subjKey} className="hover:bg-neutral-50/50">
@@ -438,11 +498,19 @@ export default function MarksEntryModal({
                             </td>
 
                             <td className="p-2.5 font-medium text-neutral-700">
-                              {subj.max_marks}
+                              <span>{subj.max_marks}</span>
+                              <span className="text-neutral-400 font-normal"> / {subj.pass_marks}</span>
                             </td>
 
-                            <td className="p-2.5 text-neutral-600">
-                              {subj.pass_marks}
+                            <td className="p-2.5 font-medium text-neutral-700">
+                              {isCE ? (
+                                <>
+                                  <span>{subj.ce_max_marks}</span>
+                                  <span className="text-neutral-400 font-normal"> / {subj.ce_pass_marks || 0}</span>
+                                </>
+                              ) : (
+                                <span className="text-neutral-400 font-mono">-</span>
+                              )}
                             </td>
 
                             <td className="p-2.5">
@@ -451,12 +519,36 @@ export default function MarksEntryModal({
                                 disabled={entry.is_absent}
                                 min={0}
                                 max={subj.max_marks}
-                                value={entry.marks_obtained}
+                                value={entry.exam_marks_obtained}
                                 onChange={(e) =>
-                                  handleMarkChange(subjKey, subj.max_marks, e.target.value)
+                                  handleExamMarkChange(subjKey, subj.max_marks, isCE, e.target.value)
                                 }
-                                className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none font-bold disabled:bg-neutral-100 text-neutral-900"
+                                className="w-16 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none font-bold disabled:bg-neutral-100 text-neutral-900"
                               />
+                            </td>
+
+                            <td className="p-2.5">
+                              {isCE ? (
+                                <input
+                                  type="number"
+                                  disabled={entry.is_absent}
+                                  min={0}
+                                  max={subj.ce_max_marks}
+                                  value={entry.ce_marks_obtained}
+                                  onChange={(e) =>
+                                    handleCeMarkChange(subjKey, subj.ce_max_marks, e.target.value)
+                                  }
+                                  className="w-16 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none font-bold disabled:bg-neutral-100 text-neutral-900"
+                                />
+                              ) : (
+                                <span className="text-neutral-400 font-mono text-center block">-</span>
+                              )}
+                            </td>
+
+                            <td className="p-2.5 text-center">
+                              <span className="font-bold text-xs bg-neutral-100 text-neutral-900 px-2 py-1 rounded border border-neutral-200">
+                                {currentTotal} / {totalMax}
+                              </span>
                             </td>
 
                             <td className="p-2.5 text-center">

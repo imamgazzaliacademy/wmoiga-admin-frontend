@@ -253,14 +253,18 @@ export default function ClassMarkListModal({
                     <th className="p-3 w-10">Sl</th>
                     <th className="p-3">Admission No</th>
                     <th className="p-3">Student Name</th>
-                    {subjects.map((subj) => (
-                      <th key={subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id)} className="p-3 text-center">
-                        <div>{subj.name}</div>
-                        <div className="text-[10px] font-normal text-neutral-400">
-                          (Max: {subj.max_marks})
-                        </div>
-                      </th>
-                    ))}
+                    {subjects.map((subj) => {
+                      const isCE = Number(subj.ce_max_marks || 0) > 0;
+                      const subjTotalMax = Number(subj.max_marks) + (isCE ? Number(subj.ce_max_marks || 0) : 0);
+                      return (
+                        <th key={subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id)} className="p-3 text-center">
+                          <div>{subj.name}</div>
+                          <div className="text-[10px] font-normal text-neutral-400">
+                            {isCE ? `Exam: ${subj.max_marks} | CE: ${subj.ce_max_marks} (${subjTotalMax})` : `(Max: ${subj.max_marks})`}
+                          </div>
+                        </th>
+                      );
+                    })}
                     <th className="p-3 text-center">Total</th>
                     <th className="p-3 text-center">Percentage</th>
                     <th className="p-3 text-center">Result</th>
@@ -286,6 +290,7 @@ export default function ClassMarkListModal({
                         {subjects.map((subj) => {
                           const subjKey = subj.subject_id !== undefined && subj.subject_id !== null ? Number(subj.subject_id) : Number(subj.id);
                           const mark = markMap.get(subjKey);
+                          const isCE = Number(subj.ce_max_marks || 0) > 0;
                           if (!mark) {
                             return (
                               <td key={subjKey} className="p-3 text-center text-neutral-400">
@@ -300,15 +305,23 @@ export default function ClassMarkListModal({
                               </td>
                             );
                           }
+                          const examObt = mark.exam_marks_obtained !== null && mark.exam_marks_obtained !== undefined ? mark.exam_marks_obtained : mark.marks_obtained;
+                          const ceObt = mark.ce_marks_obtained || 0;
+
                           return (
                             <td key={subjKey} className="p-3 text-center font-medium">
                               <span
                                 className={
-                                  mark.is_passed ? "text-neutral-900" : "text-red-700 font-bold"
+                                  mark.is_passed ? "text-neutral-900 font-bold" : "text-red-700 font-bold"
                                 }
                               >
                                 {mark.marks_obtained}
                               </span>
+                              {isCE && (
+                                <span className="text-[10px] text-neutral-400 block font-normal">
+                                  ({examObt} + {ceObt})
+                                </span>
+                              )}
                             </td>
                           );
                         })}

@@ -21,6 +21,8 @@ interface SubjectRowConfig {
   is_selected: boolean;
   max_marks: number;
   pass_marks: number;
+  ce_max_marks: number;
+  ce_pass_marks: number;
   display_order: number;
   exam_date: string;
   time_slot: "Morning" | "Afternoon" | "";
@@ -81,6 +83,8 @@ export default function SubjectConfigModal({
           is_selected: Boolean(existing),
           max_marks: existing ? existing.max_marks : 100,
           pass_marks: existing ? existing.pass_marks : 35,
+          ce_max_marks: existing ? (existing.ce_max_marks ?? 0) : 0,
+          ce_pass_marks: existing ? (existing.ce_pass_marks ?? 0) : 0,
           display_order: existing ? existing.display_order : idx + 1,
           exam_date: existing?.exam_date ? String(existing.exam_date).slice(0, 10) : "",
           time_slot: existing?.time_slot || "",
@@ -142,15 +146,27 @@ export default function SubjectConfigModal({
 
     for (const s of selected) {
       if (s.max_marks <= 0) {
-        toast.error(`Maximum marks for ${s.name} must be greater than zero`);
+        toast.error(`Exam maximum marks for ${s.name} must be greater than zero`);
         return;
       }
       if (s.pass_marks < 0) {
-        toast.error(`Pass marks for ${s.name} cannot be negative`);
+        toast.error(`Exam pass marks for ${s.name} cannot be negative`);
         return;
       }
       if (s.pass_marks > s.max_marks) {
-        toast.error(`Pass marks for ${s.name} cannot exceed maximum marks`);
+        toast.error(`Exam pass marks for ${s.name} cannot exceed exam maximum marks`);
+        return;
+      }
+      if (s.ce_max_marks < 0) {
+        toast.error(`CE maximum marks for ${s.name} cannot be negative`);
+        return;
+      }
+      if (s.ce_pass_marks < 0) {
+        toast.error(`CE pass marks for ${s.name} cannot be negative`);
+        return;
+      }
+      if (s.ce_max_marks > 0 && s.ce_pass_marks > s.ce_max_marks) {
+        toast.error(`CE pass marks for ${s.name} cannot exceed CE maximum marks`);
         return;
       }
 
@@ -191,6 +207,8 @@ export default function SubjectConfigModal({
           subject_id: s.subject_id,
           max_marks: Number(s.max_marks),
           pass_marks: Number(s.pass_marks),
+          ce_max_marks: Number(s.ce_max_marks || 0),
+          ce_pass_marks: Number(s.ce_max_marks || 0) > 0 ? Number(s.ce_pass_marks || 0) : 0,
           display_order: Number(s.display_order) || idx + 1,
           exam_date: s.exam_date || null,
           time_slot: s.time_slot || null,
@@ -323,115 +341,167 @@ export default function SubjectConfigModal({
             </div>
           ) : (
             <div className="border border-neutral-200 rounded-lg overflow-x-auto scrollbar-thin">
-              <table className="w-full min-w-[780px] text-left text-xs whitespace-nowrap">
+              <table className="w-full min-w-[920px] text-left text-xs whitespace-nowrap">
                 <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-700 font-semibold">
                   <tr>
                     <th className="p-3 w-10 text-center">Include</th>
                     <th className="p-3">Subject Name</th>
-                    <th className="p-3 w-24">Code</th>
-                    <th className="p-3 w-24">Max Marks</th>
-                    <th className="p-3 w-24">Pass Marks</th>
-                    <th className="p-3 w-36">Exam Date</th>
-                    <th className="p-3 w-44">Time Slot</th>
-                    <th className="p-3 w-16 text-center">Order</th>
+                    <th className="p-3 w-20">Code</th>
+                    <th className="p-3 w-20">Exam Max</th>
+                    <th className="p-3 w-20">Exam Pass</th>
+                    <th className="p-3 w-20">CE Max</th>
+                    <th className="p-3 w-20">CE Pass</th>
+                    <th className="p-3 w-20 text-center">Total Max</th>
+                    <th className="p-3 w-32">Exam Date</th>
+                    <th className="p-3 w-40">Time Slot</th>
+                    <th className="p-3 w-14 text-center">Order</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
-                  {subjectRows.map((row, idx) => (
-                    <tr
-                      key={row.subject_id}
-                      className={`transition-colors ${
-                        row.is_selected ? "bg-neutral-50/50" : "opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      <td className="p-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={row.is_selected}
-                          onChange={() => handleToggleSelect(idx)}
-                          className="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 cursor-pointer"
-                        />
-                      </td>
+                  {subjectRows.map((row, idx) => {
+                    const isCeEnabled = (row.ce_max_marks || 0) > 0;
+                    const totalMax = Number(row.max_marks || 0) + Number(row.ce_max_marks || 0);
 
-                      <td className="p-3">
-                        <span className="font-semibold text-neutral-900">{row.name}</span>
-                      </td>
+                    return (
+                      <tr
+                        key={row.subject_id}
+                        className={`transition-colors ${
+                          row.is_selected ? "bg-neutral-50/50" : "opacity-60 hover:opacity-100"
+                        }`}
+                      >
+                        <td className="p-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={row.is_selected}
+                            onChange={() => handleToggleSelect(idx)}
+                            className="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 cursor-pointer"
+                          />
+                        </td>
 
-                      <td className="p-3">
-                        <span className="font-mono text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200">
-                          {row.code || "-"}
-                        </span>
-                      </td>
+                        <td className="p-3">
+                          <span className="font-semibold text-neutral-900">{row.name}</span>
+                        </td>
 
-                      <td className="p-3">
-                        <input
-                          type="number"
-                          disabled={!row.is_selected}
-                          min={1}
-                          value={row.max_marks}
-                          onChange={(e) =>
-                            handleUpdateField(idx, "max_marks", Number(e.target.value))
-                          }
-                          className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
-                        />
-                      </td>
+                        <td className="p-3">
+                          <span className="font-mono text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200">
+                            {row.code || "-"}
+                          </span>
+                        </td>
 
-                      <td className="p-3">
-                        <input
-                          type="number"
-                          disabled={!row.is_selected}
-                          min={0}
-                          value={row.pass_marks}
-                          onChange={(e) =>
-                            handleUpdateField(idx, "pass_marks", Number(e.target.value))
-                          }
-                          className="w-20 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
-                        />
-                      </td>
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            disabled={!row.is_selected}
+                            min={1}
+                            value={row.max_marks}
+                            onChange={(e) =>
+                              handleUpdateField(idx, "max_marks", Number(e.target.value))
+                            }
+                            className="w-16 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
+                          />
+                        </td>
 
-                      <td className="p-3">
-                        <input
-                          type="date"
-                          disabled={!row.is_selected}
-                          min={examStartDate || undefined}
-                          max={examEndDate || undefined}
-                          value={row.exam_date}
-                          onChange={(e) =>
-                            handleUpdateField(idx, "exam_date", e.target.value)
-                          }
-                          className="w-32 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
-                        />
-                      </td>
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            disabled={!row.is_selected}
+                            min={0}
+                            value={row.pass_marks}
+                            onChange={(e) =>
+                              handleUpdateField(idx, "pass_marks", Number(e.target.value))
+                            }
+                            className="w-16 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
+                          />
+                        </td>
 
-                      <td className="p-3">
-                        <select
-                          disabled={!row.is_selected}
-                          value={row.time_slot}
-                          onChange={(e) =>
-                            handleUpdateField(idx, "time_slot", e.target.value)
-                          }
-                          className="w-40 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 bg-white"
-                        >
-                          <option value="">No slot selected</option>
-                          <option value="Morning">Morning (8:00 AM – 10:00 AM)</option>
-                          <option value="Afternoon">Afternoon (2:00 PM – 4:00 PM)</option>
-                        </select>
-                      </td>
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            disabled={!row.is_selected}
+                            min={0}
+                            value={row.ce_max_marks}
+                            onChange={(e) => {
+                              const val = Math.max(0, Number(e.target.value));
+                              setSubjectRows((prev) =>
+                                prev.map((r, i) =>
+                                  i === idx
+                                    ? {
+                                        ...r,
+                                        ce_max_marks: val,
+                                        ce_pass_marks: val === 0 ? 0 : r.ce_pass_marks,
+                                      }
+                                    : r
+                                )
+                              );
+                            }}
+                            className="w-16 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
+                          />
+                        </td>
 
-                      <td className="p-3 text-center">
-                        <input
-                          type="number"
-                          disabled={!row.is_selected}
-                          min={1}
-                          value={row.display_order}
-                          onChange={(e) =>
-                            handleUpdateField(idx, "display_order", Number(e.target.value))
-                          }
-                          className="w-12 text-center px-1 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            disabled={!row.is_selected || !isCeEnabled}
+                            min={0}
+                            max={row.ce_max_marks || 0}
+                            value={isCeEnabled ? row.ce_pass_marks : 0}
+                            onChange={(e) =>
+                              handleUpdateField(idx, "ce_pass_marks", Math.max(0, Number(e.target.value)))
+                            }
+                            className="w-16 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
+                          />
+                        </td>
+
+                        <td className="p-3 text-center">
+                          <span className="font-bold text-xs bg-neutral-100 text-neutral-800 px-2 py-1 rounded border border-neutral-200">
+                            {totalMax}
+                          </span>
+                        </td>
+
+                        <td className="p-3">
+                          <input
+                            type="date"
+                            disabled={!row.is_selected}
+                            min={examStartDate || undefined}
+                            max={examEndDate || undefined}
+                            value={row.exam_date}
+                            onChange={(e) =>
+                              handleUpdateField(idx, "exam_date", e.target.value)
+                            }
+                            className="w-32 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 font-medium"
+                          />
+                        </td>
+
+                        <td className="p-3">
+                          <select
+                            disabled={!row.is_selected}
+                            value={row.time_slot}
+                            onChange={(e) =>
+                              handleUpdateField(idx, "time_slot", e.target.value)
+                            }
+                            className="w-38 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 bg-white"
+                          >
+                            <option value="">No slot selected</option>
+                            <option value="Morning">Morning (8:00 AM – 10:00 AM)</option>
+                            <option value="Afternoon">Afternoon (2:00 PM – 4:00 PM)</option>
+                          </select>
+                        </td>
+
+                        <td className="p-3 text-center">
+                          <input
+                            type="number"
+                            disabled={!row.is_selected}
+                            min={1}
+                            value={row.display_order}
+                            onChange={(e) =>
+                              handleUpdateField(idx, "display_order", Number(e.target.value))
+                            }
+                            className="w-12 text-center px-1 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
