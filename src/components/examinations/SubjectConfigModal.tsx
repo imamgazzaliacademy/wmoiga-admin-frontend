@@ -274,11 +274,10 @@ export default function SubjectConfigModal({
                 <button
                   key={cls.value}
                   onClick={() => setSelectedClass(cls.value)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
-                    isSelected
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${isSelected
                       ? "bg-neutral-900 text-white shadow-xs"
                       : "bg-white text-neutral-700 hover:bg-neutral-200/70 border border-neutral-200"
-                  }`}
+                    }`}
                 >
                   {cls.label}
                 </button>
@@ -365,9 +364,8 @@ export default function SubjectConfigModal({
                     return (
                       <tr
                         key={row.subject_id}
-                        className={`transition-colors ${
-                          row.is_selected ? "bg-neutral-50/50" : "opacity-60 hover:opacity-100"
-                        }`}
+                        className={`transition-colors ${row.is_selected ? "bg-neutral-50/50" : "opacity-60 hover:opacity-100"
+                          }`}
                       >
                         <td className="p-3 text-center">
                           <input
@@ -426,10 +424,10 @@ export default function SubjectConfigModal({
                                 prev.map((r, i) =>
                                   i === idx
                                     ? {
-                                        ...r,
-                                        ce_max_marks: val,
-                                        ce_pass_marks: val === 0 ? 0 : r.ce_pass_marks,
-                                      }
+                                      ...r,
+                                      ce_max_marks: val,
+                                      ce_pass_marks: val === 0 ? 0 : r.ce_pass_marks,
+                                    }
                                     : r
                                 )
                               );
@@ -482,7 +480,7 @@ export default function SubjectConfigModal({
                             className="w-38 px-2 py-1 border border-neutral-300 rounded text-xs focus:ring-1 focus:ring-neutral-900 outline-none disabled:bg-neutral-100 bg-white"
                           >
                             <option value="">No slot selected</option>
-                            <option value="Morning">Morning (8:00 AM – 10:00 AM)</option>
+                            <option value="Morning">Morning (7:30 AM – 9:30 AM)</option>
                             <option value="Afternoon">Afternoon (2:00 PM – 4:00 PM)</option>
                           </select>
                         </td>
