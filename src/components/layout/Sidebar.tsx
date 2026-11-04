@@ -18,6 +18,7 @@ import {
   ChevronDown,
   UserCheck,
   ShieldCheck,
+  FileDown,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -52,6 +53,7 @@ const menuItems: MenuItem[] = [
     children: [
       { name: "Subjects", icon: BookOpen, href: "/subjects", permission: "view_subjects" },
       { name: "Examinations", icon: Award, href: "/examinations", permission: "view_examinations" },
+      { name: "Manage Forms", icon: FileDown, href: "/academic-forms", permission: "view_academic_forms" },
     ],
   },
   { name: "Alumni", icon: GraduationCap, href: "/alumni", permission: "view_alumni_manage" },
@@ -76,13 +78,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Track expanded state for menu groups with submenus
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {
     const isAcademicsActive =
-      pathname.startsWith("/subjects") || pathname.startsWith("/examinations");
+      pathname.startsWith("/subjects") ||
+      pathname.startsWith("/examinations") ||
+      pathname.startsWith("/academic-forms");
     return { Academics: isAcademicsActive };
   });
 
   // Ensure Academics opens automatically when navigating to one of its subpages
   useEffect(() => {
-    if (pathname.startsWith("/subjects") || pathname.startsWith("/examinations")) {
+    if (
+      pathname.startsWith("/subjects") ||
+      pathname.startsWith("/examinations") ||
+      pathname.startsWith("/academic-forms")
+    ) {
       setOpenMenus((prev) => ({ ...prev, Academics: true }));
     }
   }, [pathname]);
@@ -185,8 +193,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       <ChevronDown
                         size={16}
                         className={`transition-transform duration-200 ${isExpanded
-                            ? "rotate-180 text-primary"
-                            : "text-gray-400 group-hover:text-primary"
+                          ? "rotate-180 text-primary"
+                          : "text-gray-400 group-hover:text-primary"
                           }`}
                       />
                     </button>
@@ -194,8 +202,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     {/* Submenu items */}
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded
-                          ? "max-h-48 opacity-100"
-                          : "max-h-0 opacity-0 pointer-events-none"
+                        ? "max-h-48 opacity-100"
+                        : "max-h-0 opacity-0 pointer-events-none"
                         }`}
                     >
                       <div className="pl-3.5 ml-4 border-l-2 border-gray-100 space-y-1 py-1">

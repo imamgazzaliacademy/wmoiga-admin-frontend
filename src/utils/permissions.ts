@@ -72,6 +72,15 @@ export const PERMISSION_REGISTRY: PermissionGroup[] = [
         ],
     },
     {
+        id: 'academic_forms',
+        name: 'Academics - Forms Download',
+        description: 'Downloadable student applications and academic forms',
+        permissions: [
+            { key: 'view_academic_forms', label: 'View Forms Download', description: 'View downloadable academic forms' },
+            { key: 'manage_academic_forms', label: 'Manage Forms Download', description: 'Add, update, and delete downloadable academic forms' },
+        ],
+    },
+    {
         id: 'announcements',
         name: 'Announcements',
         description: 'Institutional announcements and attachments',
