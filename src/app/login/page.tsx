@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Lock, User } from "lucide-react";
+import { Lock, User, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 
@@ -14,6 +14,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -39,7 +40,7 @@ export default function LoginPage() {
                 body: JSON.stringify({ username, password })
             });
 
-            const data = await response.json();            
+            const data = await response.json();
 
             if (data.success && data.token) {
                 // Store token & user in AuthContext
@@ -84,7 +85,7 @@ export default function LoginPage() {
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                 <input
                                     type="text"
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg outline-none focus:outline-none focus:ring-0 focus:border-black transition-all"
                                     placeholder="Enter your username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
@@ -98,13 +99,22 @@ export default function LoginPage() {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                 <input
-                                    type="password"
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    type={showPassword ? "text" : "password"}
+                                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg outline-none focus:outline-none focus:ring-0 focus:border-black transition-all"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
                             </div>
                         </div>
 

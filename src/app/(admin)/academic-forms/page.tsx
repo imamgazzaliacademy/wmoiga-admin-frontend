@@ -233,7 +233,7 @@ export default function AcademicFormsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-neutral-200">
           <div>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#0d3b2e]/10 text-[#0d3b2e] flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
                 <FileDown size={18} />
               </div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900">
@@ -248,7 +248,7 @@ export default function AcademicFormsPage() {
           {canManage && (
             <button
               onClick={openCreateModal}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0d3b2e] hover:bg-[#0d3b2e]/90 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all cursor-pointer self-start sm:self-auto"
             >
               <Plus size={16} />
               <span>Add New Form</span>
@@ -273,7 +273,7 @@ export default function AcademicFormsPage() {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#0d3b2e]/20 focus:border-[#0d3b2e] transition-all"
+                  className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
                 {search && (
                   <button
@@ -349,7 +349,7 @@ export default function AcademicFormsPage() {
                           <TableCell>
                             <div className="space-y-0.5">
                               <div className="font-semibold text-neutral-900 text-sm flex items-center gap-1.5">
-                                <FileText size={15} className="text-[#0d3b2e] shrink-0" />
+                                <FileText size={15} className="text-primary shrink-0" />
                                 <span>{item.title}</span>
                               </div>
                               {item.description ? (
@@ -493,7 +493,7 @@ export default function AcademicFormsPage() {
             <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-neutral-200 overflow-hidden my-8 animate-in fade-in zoom-in-95">
               <div className="px-5 py-4 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/50">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-[#0d3b2e]/10 text-[#0d3b2e] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
                     <FileDown size={16} />
                   </div>
                   <h3 className="font-bold text-sm sm:text-base text-neutral-900">
@@ -520,7 +520,7 @@ export default function AcademicFormsPage() {
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
                     placeholder="e.g., Transfer Certificate (TC) Application, Medical Leave Form"
-                    className="w-full px-3 py-2 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#0d3b2e]/20 focus:border-[#0d3b2e]"
+                    className="w-full px-3 py-2 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -534,7 +534,7 @@ export default function AcademicFormsPage() {
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="Brief description, instructions for students, or submission guidelines..."
-                    className="w-full px-3 py-2 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-[#0d3b2e]/20 focus:border-[#0d3b2e]"
+                    className="w-full px-3 py-2 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
 
@@ -551,7 +551,7 @@ export default function AcademicFormsPage() {
                   {editingForm && !selectedFile && (
                     <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2 min-w-0">
-                        <FileText size={16} className="text-[#0d3b2e] shrink-0" />
+                        <FileText size={16} className="text-primary shrink-0" />
                         <div className="truncate">
                           <span className="font-semibold text-neutral-800">{editingForm.file_name}</span>
                           {editingForm.file_size && (
@@ -571,8 +571,8 @@ export default function AcademicFormsPage() {
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${selectedFile
-                        ? "border-[#0d3b2e] bg-[#0d3b2e]/5"
-                        : "border-neutral-300 hover:border-[#0d3b2e]/60 hover:bg-neutral-50"
+                      ? "border-primary bg-primary/5"
+                      : "border-neutral-300 hover:border-primary/60 hover:bg-neutral-50"
                       }`}
                   >
                     <input
@@ -585,7 +585,7 @@ export default function AcademicFormsPage() {
 
                     {selectedFile ? (
                       <div className="space-y-1">
-                        <div className="flex items-center justify-center gap-2 text-xs font-bold text-[#0d3b2e]">
+                        <div className="flex items-center justify-center gap-2 text-xs font-bold text-primary">
                           <File size={16} />
                           <span>{selectedFile.name}</span>
                         </div>
@@ -618,7 +618,7 @@ export default function AcademicFormsPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2 text-xs font-semibold text-white bg-[#0d3b2e] hover:bg-[#0d3b2e]/90 rounded-lg shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary/95 rounded-lg shadow-xs transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isSaving
                       ? editingForm
