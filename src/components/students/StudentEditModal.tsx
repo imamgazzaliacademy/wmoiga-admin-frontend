@@ -74,7 +74,7 @@ export default function StudentEditModal({ isOpen, student, onClose, onSuccess }
     if (cleanAdm !== student.admission_number) {
       if (!ADMISSION_NUMBER_REGEX.test(cleanAdm)) {
         toast.error(
-          "Invalid Admission Number format. Expected format: IGA{YY}{SECTION_CODE}{NNN} (e.g., IGA26HS001, IGA23HSS001, IGA20DGR001)"
+          "Invalid Admission Number format. Expected format: IGA{YY}{SECTION_CODE}{NNN} (e.g., IGA26HS001, IGA23HSS001, IGA20DGR001, IGA26SF001)"
         );
         return;
       }

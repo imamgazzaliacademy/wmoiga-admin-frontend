@@ -193,7 +193,7 @@ export default function CreateEditSubjectModal({ isOpen, subject, onClose, onSuc
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                 {SUPPORTED_CLASSES.map((cls) => {
                   const isChecked = selectedClasses.includes(cls.value);
                   return (

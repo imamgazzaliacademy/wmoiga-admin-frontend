@@ -22,9 +22,11 @@ export const SUPPORTED_CLASSES = [
   { value: "D1", label: "D1 (Degree 1st Yr)" },
   { value: "D2", label: "D2 (Degree 2nd Yr)" },
   { value: "D3", label: "D3 (Degree 3rd Yr)" },
+  { value: "SF1", label: "SF1" },
+  { value: "SF2", label: "SF2" },
 ];
 
-export const ADMISSION_NUMBER_REGEX = /^IGA\d{2}(HS|HSS|DGR)\d{3,}$/i;
+export const ADMISSION_NUMBER_REGEX = /^IGA\d{2}(HS|HSS|DGR|SF)\d{3,}$/i;
 
 export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }: Props) {
   const dispatch = useDispatch();
@@ -155,7 +157,7 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
 
     if (!ADMISSION_NUMBER_REGEX.test(finalAdmissionNumber)) {
       toast.error(
-        "Invalid Admission Number format. Expected format: IGA{YY}{SECTION_CODE}{NNN} (e.g., IGA26HS001, IGA23HSS001, IGA20DGR001)"
+        "Invalid Admission Number format. Expected format: IGA{YY}{SECTION_CODE}{NNN} (e.g., IGA26HS001, IGA23HSS001, IGA20DGR001, IGA26SF001)"
       );
       return;
     }
@@ -277,7 +279,7 @@ export default function StudentRegistrationModal({ isOpen, onClose, onSuccess }:
                     </select>
                   </div>
                   {/* <p className="text-[11px] text-neutral-500 mt-1">
-                  Derives section code: HS (8-10), HSS (+1,+2), DGR (D1-D3).
+                  Derives section code: HS (8-10), HSS (+1,+2), DGR (D1-D3), SF (SF1, SF2).
                 </p> */}
                 </div>
               </div>
